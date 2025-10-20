@@ -1,12 +1,23 @@
 package edu.fontysmaua.tournamentapi.business;
-
 import edu.fontysmaua.tournamentapi.domain.Team.GetAllTeamsResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-public interface TeamUseCases {
+import edu.fontysmaua.tournamentapi.persistence.TeamRepository;
+import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
 
-  
-  // GET
-  public interface getAllTeams {
-    GetAllTeamsResponse getAllTeams();
-  }
+@Service
+public class TeamUseCases {
+
+    //create - save in the database
+    @Autowired
+    private TeamRepository teamRepository;
+    
+    public void save(TeamEntity team) {
+        this.teamRepository.save(team);
+    }
+    
+    public interface getAllTeams {
+      GetAllTeamsResponse getAllTeams();
+    }
 }

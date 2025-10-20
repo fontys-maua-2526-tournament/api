@@ -1,7 +1,6 @@
 package edu.fontysmaua.tournamentapi.controller;
 
 import edu.fontysmaua.tournamentapi.business.CreateTournamentUseCase;
-import edu.fontysmaua.tournamentapi.domain.Tournament;
 import edu.fontysmaua.tournamentapi.domain.dto.tournament.CreateTournamentRequest;
 import edu.fontysmaua.tournamentapi.domain.dto.tournament.CreateTournamentResponse;
 import org.junit.jupiter.api.Test;
@@ -89,6 +88,6 @@ class TournamentControllerTest {
                 .andExpect(status().isBadRequest());
 
         // Assert
-        verifyNoInteractions(createTournamentUseCaseMock);
+        verify(createTournamentUseCaseMock, never()).createTournament(any(CreateTournamentRequest.class));
     }
 }

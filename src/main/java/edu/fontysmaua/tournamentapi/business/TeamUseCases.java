@@ -1,5 +1,5 @@
 package edu.fontysmaua.tournamentapi.business;
-
+import edu.fontysmaua.tournamentapi.domain.Team.GetAllTeamsResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,5 +16,8 @@ public class TeamUseCases {
     public void save(TeamEntity team) {
         this.teamRepository.save(team);
     }
-
+    
+    public interface getAllTeams {
+      GetAllTeamsResponse getAllTeams();
+    }
 }

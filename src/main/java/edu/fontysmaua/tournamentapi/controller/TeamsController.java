@@ -1,8 +1,10 @@
 package edu.fontysmaua.tournamentapi.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +23,9 @@ public class TeamsController {
   private final TeamUseCases.getAllTeams getAllTeamsUseCase;
   private final TeamUseCases.updateTeam updateTeamUseCase;
 
+  @Autowired
+  private TeamUseCases teamUseCases;
+
   @GetMapping
   public ResponseEntity<GetAllTeamsResponse> getAllTeams() {
     return ResponseEntity.ok(getAllTeamsUseCase.getAllTeams());
@@ -31,5 +36,10 @@ public class TeamsController {
     team.setId(id);
     UpdateTeamResponse response = updateTeamUseCase.updateTeam(team);
     return ResponseEntity.ok(response);
+  }
+
+  @PostMapping("/create")
+  public void createTeam (@RequestBody TeamEntity team){
+    teamUseCases.save(team);
   }
 }

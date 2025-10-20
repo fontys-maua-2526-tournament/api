@@ -40,6 +40,6 @@ public class TeamsController {
 
   @PostMapping("/create")
   public void createTeam (@RequestBody TeamEntity team){
-    teamUseCases.save(team);
+    teamUseCases.createTeam(team);
   }
 }

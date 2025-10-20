@@ -16,7 +16,7 @@ public class TeamUseCases {
   @Autowired
   private TeamRepository teamRepository;
 
-  public void save(TeamEntity team) {
+  public void createTeam(TeamEntity team) {
     this.teamRepository.save(team);
   }
 

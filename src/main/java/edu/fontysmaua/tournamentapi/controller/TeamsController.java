@@ -19,4 +19,15 @@ public class TeamsController {
   public ResponseEntity<GetAllTeamsResponse> getAllTeams() {
     return ResponseEntity.ok(getAllTeamsUseCase.getAllTeams());
   }
+
+
+  @DeleteMapping("/{teamId}")
+  public ResponseEntity<String> deleteTeam(@PathVariable String teamId) {
+      boolean deleted = deleteTeamUseCase.deleteTeamById(teamId);
+      if (deleted) {
+          return ResponseEntity.ok("Time com ID " + teamId + " foi deletado com sucesso.");
+      } else {
+          return ResponseEntity.notFound().build(); 
+      }
+  }
 }

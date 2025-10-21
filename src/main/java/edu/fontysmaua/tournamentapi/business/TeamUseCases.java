@@ -1,10 +1,15 @@
 package edu.fontysmaua.tournamentapi.business;
 
+import edu.fontysmaua.tournamentapi.domain.Team.CreateTeamResponse;
+import edu.fontysmaua.tournamentapi.domain.Team.DeleteTeamResponse;
 import edu.fontysmaua.tournamentapi.domain.Team.GetAllTeamsResponse;
 import edu.fontysmaua.tournamentapi.domain.Team.UpdateTeamResponse;
+import edu.fontysmaua.tournamentapi.domain.Team.DeleteTeamResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.mysql.cj.x.protobuf.MysqlxCrud.Delete;
 
 import edu.fontysmaua.tournamentapi.persistence.TeamRepository;
 import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
@@ -26,5 +31,11 @@ public class TeamUseCases {
 
   public interface updateTeam {
     UpdateTeamResponse updateTeam(TeamEntity team);
+  }
+  public interface DeleteTeam {
+      DeleteTeamResponse deleteTeamById(String teamId);
+  }
+  public interface CreateTeam {
+    CreateTeamResponse createTeam(TeamEntity team);
   }
 }

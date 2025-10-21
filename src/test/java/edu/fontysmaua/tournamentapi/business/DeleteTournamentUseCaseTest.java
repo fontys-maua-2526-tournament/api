@@ -1,5 +1,6 @@
-package edu.fontysmaua.tournamentapi.business.impl;
+package edu.fontysmaua.tournamentapi.business;
 
+import edu.fontysmaua.tournamentapi.business.impl.DeleteTournamentUseCaseImpl;
 import edu.fontysmaua.tournamentapi.persistence.TournamentRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class DeleteTournamentUseCaseImplTest {
+class DeleteTournamentUseCaseTest {
     @Mock
     private TournamentRepository tournamentRepository;
     @InjectMocks

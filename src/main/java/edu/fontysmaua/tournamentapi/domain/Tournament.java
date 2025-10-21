@@ -1,5 +1,6 @@
 package edu.fontysmaua.tournamentapi.domain;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,9 +13,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Tournament {
+
     private Long id;
+    @NotBlank
     private String name;
+    @NotBlank
     private String address;
+    @NotBlank
     private LocalDateTime startTime;
+    @NotBlank
     private LocalDateTime endTime;
 }

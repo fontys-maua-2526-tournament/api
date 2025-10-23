@@ -13,10 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.fontysmaua.tournamentapi.business.TeamUseCases;
-import edu.fontysmaua.tournamentapi.domain.Team.response.CreateTeamResponse;
-import edu.fontysmaua.tournamentapi.domain.Team.response.DeleteTeamResponse;
 import edu.fontysmaua.tournamentapi.domain.Team.response.GetAllTeamsResponse;
-import edu.fontysmaua.tournamentapi.domain.Team.response.UpdateTeamResponse;
 import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
 import lombok.RequiredArgsConstructor;
 

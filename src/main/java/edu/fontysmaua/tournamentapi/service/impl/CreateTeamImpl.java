@@ -1,10 +1,8 @@
-package edu.fontysmaua.tournamentapi.business.impl.Team;
+package edu.fontysmaua.tournamentapi.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import edu.fontysmaua.tournamentapi.business.TeamUseCases;
-import edu.fontysmaua.tournamentapi.domain.Team.response.CreateTeamResponse;
 import edu.fontysmaua.tournamentapi.persistence.TeamRepository;
 import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
 

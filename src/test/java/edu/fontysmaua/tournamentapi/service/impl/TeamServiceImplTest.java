@@ -62,7 +62,7 @@ class TeamServiceImplTest {
         assertNotNull(response);
         assertNotNull(response.getTeams());
         assertEquals(1, response.getTeams().size());
-        assertEquals(model, response.getTeams().get(0));
+        assertEquals(model, response.getTeams().getFirst());
 
         verify(teamRepository, times(1)).findAll();
         verify(teamMapper, times(1)).entitiesToModels(anyList());

@@ -10,10 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import edu.fontysmaua.tournamentapi.domain.Tournament;
 import edu.fontysmaua.tournamentapi.business.TournamentUpdateUseCase;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
-import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import edu.fontysmaua.tournamentapi.business.DeleteTournamentUseCase;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,7 +26,6 @@ public class TournamentController {
     private final CreateTournamentUseCase createTournamentUseCase;
     private final TournamentUpdateUseCase tournamentUpdate;
     private final DeleteTournamentUseCase  deleteTournamentService;
-
   
     @PostMapping
     public ResponseEntity<CreateTournamentResponse> createTournament(@RequestBody @Valid CreateTournamentRequest request) {
@@ -38,7 +34,7 @@ public class TournamentController {
 
     }
     
-    @PostMapping("{id}")
+    @PutMapping("{id}")
     public ResponseEntity<Tournament> updateTournament(@PathVariable @Positive Long id, @RequestBody @Valid Tournament tournament) {
         if (!tournament.getId().equals(id)) {
             return ResponseEntity.badRequest().build();

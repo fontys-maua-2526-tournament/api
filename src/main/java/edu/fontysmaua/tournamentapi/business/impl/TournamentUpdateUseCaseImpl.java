@@ -21,8 +21,12 @@ public class TournamentUpdateUseCaseImpl implements TournamentUpdateUseCase {
             throw new IllegalArgumentException("Tournament cannot be null");
         }
 
-        if(tournament.getId() == null) {
-            throw new IllegalArgumentException("Tournament ID cannot be null");
+        if(tournament.getId() == null || tournament.getId().equals(0L)) {
+            throw new IllegalArgumentException("Tournament ID cannot be null or zero");
+        }
+
+        if(!tournamentRepo.existsById(tournament.getId())) {
+            throw new IllegalArgumentException("Tournament doesn't exist in the database");
         }
 
         TournamentEntity entity = TournamentEntity.builder()
@@ -35,6 +39,12 @@ public class TournamentUpdateUseCaseImpl implements TournamentUpdateUseCase {
 
         var response = tournamentRepo.save(entity);
 
-        return new Tournament(response.getId(), response.getName(), response.getAddress(), response.getStartTime(), response.getEndTime());
+        return new Tournament(
+                    response.getId(),
+                    response.getName(),
+                    response.getAddress(),
+                    response.getStartTime(),
+                    response.getEndTime()
+        );
     }
 }

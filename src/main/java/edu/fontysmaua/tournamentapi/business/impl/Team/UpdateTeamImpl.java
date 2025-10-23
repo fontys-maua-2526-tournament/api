@@ -1,21 +1,23 @@
 package edu.fontysmaua.tournamentapi.business.impl.Team;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import edu.fontysmaua.tournamentapi.domain.Team.request.SaveTeamRequest;
+import edu.fontysmaua.tournamentapi.domain.Team.response.UpdateTeamResponse;
+import lombok.AllArgsConstructor;
 
 import edu.fontysmaua.tournamentapi.persistence.TeamRepository;
-import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
+import org.springframework.stereotype.Service;
 
+@Service
+@AllArgsConstructor
 public class UpdateTeamImpl {
-  @Autowired
   private TeamRepository teamRepository;
 
-  public void updateTeam(TeamEntity team) {
+  public UpdateTeamResponse updateTeam(SaveTeamRequest team) {
     if (team == null) {
-      throw new IllegalArgumentException("team must not be null");
+      throw new IllegalArgumentException("Team must not be null");
     }
-    var id = team.getId();
-    if (id == null) {
-      throw new IllegalArgumentException("team id must not be null");
+    if (team.getId() == null) {
+      throw new IllegalArgumentException("Team id must not be null");
     }
     var existing = teamRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("Team not found with id: " + id));

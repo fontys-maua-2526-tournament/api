@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import edu.fontysmaua.tournamentapi.business.TeamUseCases;
-import edu.fontysmaua.tournamentapi.domain.Team.GetAllTeamsResponse;
+import edu.fontysmaua.tournamentapi.domain.Team.response.GetAllTeamsResponse;
 import edu.fontysmaua.tournamentapi.domain.Team.Team;
 import lombok.AllArgsConstructor;
 

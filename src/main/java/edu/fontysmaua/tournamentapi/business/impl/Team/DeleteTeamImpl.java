@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import edu.fontysmaua.tournamentapi.business.TeamUseCases;
-import edu.fontysmaua.tournamentapi.domain.Team.DeleteTeamResponse;
+import edu.fontysmaua.tournamentapi.domain.Team.response.DeleteTeamResponse;
 import edu.fontysmaua.tournamentapi.persistence.TeamRepository;
 
 @Service

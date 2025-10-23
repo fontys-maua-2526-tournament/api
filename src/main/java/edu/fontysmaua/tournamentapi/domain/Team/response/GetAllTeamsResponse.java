@@ -1,7 +1,8 @@
-package edu.fontysmaua.tournamentapi.domain.Team;
+package edu.fontysmaua.tournamentapi.domain.Team.response;
 
 import java.util.List;
 
+import edu.fontysmaua.tournamentapi.domain.Team.Team;
 import lombok.Builder;
 import lombok.Data;
 

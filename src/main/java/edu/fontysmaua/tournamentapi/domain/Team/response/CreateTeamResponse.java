@@ -1,4 +1,4 @@
-package edu.fontysmaua.tournamentapi.domain.Team;
+package edu.fontysmaua.tournamentapi.domain.Team.response;
 
 public class CreateTeamResponse {
     private String id;

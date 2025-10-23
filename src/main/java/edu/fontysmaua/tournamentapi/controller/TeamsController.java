@@ -1,9 +1,11 @@
-`package edu.fontysmaua.tournamentapi.controller;
+package edu.fontysmaua.tournamentapi.controller;
 
 
+import edu.fontysmaua.tournamentapi.domain.Team.request.SaveTeamRequest;
+import edu.fontysmaua.tournamentapi.domain.Team.response.GetAllTeamsResponse;
 import edu.fontysmaua.tournamentapi.domain.Team.response.SavedTeamResponse;
-import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
 import edu.fontysmaua.tournamentapi.service.TeamService;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,31 +17,25 @@ public class TeamsController {
     private final TeamService teamService;
 
     @GetMapping
-    public ResponseEntity<> findAll() {
-        return ResponseEntity.ok(getAllTeamsUseCase.getAllTeams());
+    public ResponseEntity<GetAllTeamsResponse> findAll() {
+        return ResponseEntity.ok(teamService.findAll());
     }
 
-    @DeleteMapping("/{teamId}")
-    public ResponseEntity<DeleteTeamResponse> deleteTeam(@PathVariable String teamId) {
-        DeleteTeamResponse response = deleteTeamUseCase.deleteTeamById(teamId);
-        return ResponseEntity.ok(response);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Long> deleteTeam(@PathVariable @Positive Long id) {
+        return ResponseEntity.ok(teamService.delete(id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UpdateTeamResponse> updateTeam(@PathVariable Long id, @RequestBody TeamEntity team) {
-        team.setId(id);
-        UpdateTeamResponse response = updateTeamUseCase.updateTeam(team);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<SavedTeamResponse> updateTeam(@PathVariable Long id, @RequestBody SaveTeamRequest request) {
+        if(!request.getId().equals(id)) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(teamService.update(request));
     }
 
     @PostMapping("/create")
-    public ResponseEntity<SavedTeamResponse> createTeam(@RequestBody TeamEntity team) {
-        SavedTeamResponse response = createTeamUseCase.createTeam(team);
-        if (response.isSuccess()) {
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
+    public ResponseEntity<SavedTeamResponse> createTeam(@RequestBody SaveTeamRequest request) {
+        return ResponseEntity.ok(teamService.create(request));
     }
 }
-`

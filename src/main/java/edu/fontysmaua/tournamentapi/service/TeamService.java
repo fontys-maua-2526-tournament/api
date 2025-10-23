@@ -1,11 +1,15 @@
 package edu.fontysmaua.tournamentapi.service;
 
-import edu.fontysmaua.tournamentapi.domain.Team.Team;
 import edu.fontysmaua.tournamentapi.domain.Team.request.SaveTeamRequest;
+import edu.fontysmaua.tournamentapi.domain.Team.response.GetAllTeamsResponse;
 import edu.fontysmaua.tournamentapi.domain.Team.response.SavedTeamResponse;
 
 public interface TeamService {
-    SavedTeamResponse createTeam(SaveTeamRequest request);
+    GetAllTeamsResponse findAll();
 
-    SavedTeamResponse updateTeam(SaveTeamRequest request);
+    SavedTeamResponse create(SaveTeamRequest request);
+
+    SavedTeamResponse update(SaveTeamRequest request);
+
+    Long delete(Long teamId);
 }

@@ -13,5 +13,4 @@ public interface TeamMapper {
 
     List<Team> entitiesToModels(List<TeamEntity> teamEntities);
     List<TeamEntity> modelsToEntities(List<Team> teams);
-
 }

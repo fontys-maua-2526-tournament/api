@@ -1,13 +1,18 @@
 package edu.fontysmaua.tournamentapi.service.impl;
 
 import edu.fontysmaua.tournamentapi.domain.Team.Team;
+import edu.fontysmaua.tournamentapi.domain.Team.request.SaveTeamRequest;
 import edu.fontysmaua.tournamentapi.domain.Team.response.GetAllTeamsResponse;
 import edu.fontysmaua.tournamentapi.mapper.TeamMapper;
 import edu.fontysmaua.tournamentapi.persistence.TeamRepository;
 import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
 import java.util.List;
@@ -15,17 +20,28 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class TeamServiceImplTest {
 
+    @Mock
     private TeamRepository teamRepository;
+    @Mock
     private TeamMapper teamMapper;
+    @InjectMocks
     private TeamServiceImpl teamService;
+
+    private TeamEntity teamEntity;
+    private Team team;
 
     @BeforeEach
     void setUp() {
-        teamRepository = mock(TeamRepository.class);
-        teamMapper = mock(TeamMapper.class);
-        teamService = new TeamServiceImpl(teamRepository, teamMapper);
+        teamEntity = new TeamEntity();
+        teamEntity.setId(1L);
+        teamEntity.setName("Team 1");
+
+        team = new Team();
+        team.setId(teamEntity.getId());
+        team.setName(teamEntity.getName());
     }
 
     // --- getAll() tests ---
@@ -40,7 +56,7 @@ class TeamServiceImplTest {
         when(teamMapper.entitiesToModels(anyList())).thenReturn(List.of(model));
 
         // Act
-        GetAllTeamsResponse response = teamService.getAll();
+        GetAllTeamsResponse response = teamService.findAll();
 
         // Assert
         assertNotNull(response);
@@ -57,7 +73,7 @@ class TeamServiceImplTest {
         when(teamRepository.findAll()).thenReturn(Collections.emptyList());
         when(teamMapper.entitiesToModels(anyList())).thenReturn(Collections.emptyList());
 
-        GetAllTeamsResponse response = teamService.getAll();
+        GetAllTeamsResponse response = teamService.findAll();
 
         assertNotNull(response);
         assertTrue(response.getTeams().isEmpty());
@@ -101,5 +117,32 @@ class TeamServiceImplTest {
         ArgumentCaptor<Long> idCaptor = ArgumentCaptor.forClass(Long.class);
         verify(teamRepository, times(1)).deleteById(idCaptor.capture());
         assertEquals(id, idCaptor.getValue());
+    }
+
+
+    @Test
+    void updateTeam_fail() {
+        assertThrows(IllegalArgumentException.class, () -> teamService.update(new SaveTeamRequest(team.getId(), team.getName())));
+        verify(teamRepository, times(1)).existsById(any(Long.class));
+        verify(teamRepository, times(0)).save(any(TeamEntity.class));
+    }
+
+    @Test
+    void updateTeam_success() {
+        when(teamRepository.existsById(any(Long.class))).thenReturn(true);
+        when(teamRepository.save(any(TeamEntity.class))).thenReturn(teamEntity);
+
+        assertDoesNotThrow(() -> teamService.update(new SaveTeamRequest(teamEntity.getId(), teamEntity.getName())));
+        verify(teamRepository, times(1)).existsById(any(Long.class));
+        verify(teamRepository, times(1)).save(any(TeamEntity.class));
+    }
+
+    @Test
+    void createTeam_success() {
+        when(teamRepository.save(any(TeamEntity.class))).thenReturn(teamEntity);
+
+        teamService.create(new SaveTeamRequest(teamEntity.getId(), teamEntity.getName()));
+
+        verify(teamRepository, times(1)).save(any(TeamEntity.class));
     }
 }

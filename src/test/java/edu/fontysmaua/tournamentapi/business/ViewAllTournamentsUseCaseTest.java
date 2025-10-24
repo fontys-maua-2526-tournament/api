@@ -20,6 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
 class ViewAllTournamentsUseCaseTest {
+
     @Mock
     private TournamentRepository tournamentRepo;
 
@@ -68,12 +69,15 @@ class ViewAllTournamentsUseCaseTest {
 
     @Test
     void viewAllTournaments_exception() {
-        when(tournamentRepo.findAll(any(Sort.class))).thenThrow(new RuntimeException("Database error"));
+        when(tournamentRepo.findAll(any(Sort.class)))
+                .thenThrow(new RuntimeException("Database error"));
 
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> tournamentViewAll.viewAllTournaments());
 
-        assertEquals("Database error", exception.getMessage());
+        assertEquals("Failed to load tournaments", exception.getMessage());
+        assertEquals("Database error", exception.getCause().getMessage());
+
         verify(tournamentRepo, times(1)).findAll(any(Sort.class));
     }
 }

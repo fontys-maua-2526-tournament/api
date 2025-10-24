@@ -1,8 +1,8 @@
 package edu.fontysmaua.tournamentapi.business.impl;
 
 import edu.fontysmaua.tournamentapi.domain.Tournament;
-import edu.fontysmaua.tournamentapi.persistance.TournamentRepository;
-import edu.fontysmaua.tournamentapi.persistance.entity.TournamentEntity;
+import edu.fontysmaua.tournamentapi.persistence.TournamentRepository;
+import edu.fontysmaua.tournamentapi.persistence.entity.TournamentEntity;
 import edu.fontysmaua.tournamentapi.business.ViewAllTournamentsUseCase;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -21,17 +21,18 @@ public class ViewAllTournamentsUseCaseImpl implements ViewAllTournamentsUseCase 
     @Transactional(readOnly = true)
     @Override
     public List<Tournament> viewAllTournaments() {
-        List<TournamentEntity> entities =
-                tournamentRepo.findAll(Sort.by(Sort.Direction.ASC, "id"));
-
-        return entities.stream()
-                .map(entity -> new Tournament(
-                        entity.getId(),
-                        entity.getName(),
-                        entity.getAddress(),
-                        entity.getStartTime(),
-                        entity.getEndTime()
-                ))
-                .collect(Collectors.toList());
-    }
+        try {
+                List<TournamentEntity> entities = tournamentRepo.findAll(Sort.by(Sort.Direction.ASC, "id"));
+                return entities.stream()
+                                .map(entity -> new Tournament(
+                                                entity.getId(),
+                                                entity.getName(),
+                                                entity.getAddress(),
+                                                entity.getStartTime(),
+                                                entity.getEndTime()))
+                                .collect(Collectors.toList());
+        } catch (Exception e) {
+                throw new RuntimeException("Failed to load tournaments", e);
+        }
+ }
 }

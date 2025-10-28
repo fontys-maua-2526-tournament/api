@@ -1,6 +1,7 @@
-package edu.fontysmaua.tournamentapi.domain;
+package edu.fontysmaua.tournamentapi.domain.dto.tournament;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,15 +13,13 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Tournament {
-
-    private Long id;
+public class CreateTournamentRequest {
     @NotBlank
     private String name;
     @NotBlank
     private String address;
-    @NotBlank
+    @NotNull
     private LocalDateTime startTime;
-    @NotBlank
+    @NotNull
     private LocalDateTime endTime;
 }

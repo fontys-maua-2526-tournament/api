@@ -13,6 +13,10 @@ import edu.fontysmaua.tournamentapi.business.TournamentUpdateUseCase;
 import jakarta.validation.constraints.Positive;
 import org.springframework.web.bind.annotation.*;
 import edu.fontysmaua.tournamentapi.business.DeleteTournamentUseCase;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import edu.fontysmaua.tournamentapi.business.GetTournamentByIdUseCase;
 
 @RestController

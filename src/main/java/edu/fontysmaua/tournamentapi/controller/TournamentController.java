@@ -1,5 +1,7 @@
 package edu.fontysmaua.tournamentapi.controller;
 
+import java.util.List;
+import edu.fontysmaua.tournamentapi.business.ViewAllTournamentsUseCase;
 import edu.fontysmaua.tournamentapi.business.CreateTournamentUseCase;
 import edu.fontysmaua.tournamentapi.domain.dto.tournament.CreateTournamentRequest;
 import edu.fontysmaua.tournamentapi.domain.dto.tournament.CreateTournamentResponse;
@@ -24,10 +26,17 @@ import edu.fontysmaua.tournamentapi.business.GetTournamentByIdUseCase;
 @AllArgsConstructor
 @CrossOrigin(origins = {"http://localhost:5173"})
 public class TournamentController {
+    private final ViewAllTournamentsUseCase viewAllTournamentsView;
     private final CreateTournamentUseCase createTournamentUseCase;
     private final TournamentUpdateUseCase tournamentUpdate;
     private final DeleteTournamentUseCase  deleteTournamentService;
     private final GetTournamentByIdUseCase getTournamentByIdUseCase;
+
+    @GetMapping
+    public ResponseEntity<List<Tournament>> viewAllTournaments() {
+        List<Tournament> tournaments = viewAllTournamentsView.viewAllTournaments();
+        return ResponseEntity.ok(tournaments);
+    }
   
     @PostMapping
     public ResponseEntity<CreateTournamentResponse> createTournament(@RequestBody @Valid CreateTournamentRequest request) {

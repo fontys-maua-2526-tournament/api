@@ -1,8 +1,8 @@
 package edu.fontysmaua.tournamentapi.controller;
 
 import edu.fontysmaua.tournamentapi.business.CreateTournamentUseCase;
-import edu.fontysmaua.tournamentapi.domain.dto.tournament.CreateTournamentRequest;
-import edu.fontysmaua.tournamentapi.domain.dto.tournament.CreateTournamentResponse;
+import edu.fontysmaua.tournamentapi.domain.request.SaveTournamentRequest;
+import edu.fontysmaua.tournamentapi.domain.response.CreateTournamentResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,7 @@ class TournamentControllerTest {
     @Test
     void createTournament_shouldReturn200ResponseWithTournamentId() throws Exception {
         // Arrange
-        CreateTournamentRequest request = CreateTournamentRequest.builder()
+        SaveTournamentRequest request = SaveTournamentRequest.builder()
                 .name("Tournament")
                 .address("Fontys Rachelsmolen")
                 .startTime(LocalDateTime.of(LocalDate.of(2026,1,29), LocalTime.of(9, 0)))
@@ -88,6 +88,6 @@ class TournamentControllerTest {
                 .andExpect(status().isBadRequest());
 
         // Assert
-        verify(createTournamentUseCaseMock, never()).createTournament(any(CreateTournamentRequest.class));
+        verify(createTournamentUseCaseMock, never()).createTournament(any(SaveTournamentRequest.class));
     }
 }

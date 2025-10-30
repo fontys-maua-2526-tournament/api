@@ -1,4 +1,4 @@
-package edu.fontysmaua.tournamentapi.domain.Team;
+package edu.fontysmaua.tournamentapi.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,8 +1,8 @@
 package edu.fontysmaua.tournamentapi.business.impl;
 
-import edu.fontysmaua.tournamentapi.business.exception.NameAlreadyExistsException;
-import edu.fontysmaua.tournamentapi.domain.dto.tournament.CreateTournamentRequest;
-import edu.fontysmaua.tournamentapi.domain.dto.tournament.CreateTournamentResponse;
+import edu.fontysmaua.tournamentapi.exception.NameAlreadyExistsException;
+import edu.fontysmaua.tournamentapi.domain.request.SaveTournamentRequest;
+import edu.fontysmaua.tournamentapi.domain.response.CreateTournamentResponse;
 import edu.fontysmaua.tournamentapi.persistence.TournamentRepository;
 import edu.fontysmaua.tournamentapi.persistence.entity.TournamentEntity;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,12 +28,12 @@ class CreateTournamentUseCaseImplTest {
     @InjectMocks
     private CreateTournamentUseCaseImpl createTournamentUseCase;
 
-    private CreateTournamentRequest request;
+    private SaveTournamentRequest request;
     private TournamentEntity savedTournament;
 
     @BeforeEach
     void setUp() {
-        request = CreateTournamentRequest.builder()
+        request = SaveTournamentRequest.builder()
                 .name("Tournament")
                 .address("Fontys Rachelsmolen")
                 .startTime(LocalDateTime.of(LocalDate.of(2026,1,29), LocalTime.of(9, 0)))

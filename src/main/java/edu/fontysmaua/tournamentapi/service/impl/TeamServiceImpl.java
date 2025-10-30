@@ -1,9 +1,9 @@
 package edu.fontysmaua.tournamentapi.service.impl;
 
-import edu.fontysmaua.tournamentapi.domain.Team.Team;
-import edu.fontysmaua.tournamentapi.domain.Team.request.SaveTeamRequest;
-import edu.fontysmaua.tournamentapi.domain.Team.response.GetAllTeamsResponse;
-import edu.fontysmaua.tournamentapi.domain.Team.response.SavedTeamResponse;
+import edu.fontysmaua.tournamentapi.domain.Team;
+import edu.fontysmaua.tournamentapi.domain.request.SaveTeamRequest;
+import edu.fontysmaua.tournamentapi.domain.response.GetAllTeamsResponse;
+import edu.fontysmaua.tournamentapi.domain.response.SavedTeamResponse;
 import edu.fontysmaua.tournamentapi.mapper.TeamMapper;
 import edu.fontysmaua.tournamentapi.persistence.TeamRepository;
 import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;

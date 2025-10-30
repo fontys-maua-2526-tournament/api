@@ -1,66 +1,55 @@
 package edu.fontysmaua.tournamentapi.controller;
 
-import java.util.List;
-import edu.fontysmaua.tournamentapi.business.ViewAllTournamentsUseCase;
-import edu.fontysmaua.tournamentapi.business.CreateTournamentUseCase;
-import edu.fontysmaua.tournamentapi.domain.dto.tournament.CreateTournamentRequest;
-import edu.fontysmaua.tournamentapi.domain.dto.tournament.CreateTournamentResponse;
+import edu.fontysmaua.tournamentapi.domain.request.SaveTournamentRequest;
+import edu.fontysmaua.tournamentapi.domain.response.GetAllTournamentsResponse;
+import edu.fontysmaua.tournamentapi.domain.response.GetTournamentByIdResponse;
+import edu.fontysmaua.tournamentapi.domain.response.SavedTournamentResponse;
+import edu.fontysmaua.tournamentapi.service.TournamentService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import edu.fontysmaua.tournamentapi.domain.Tournament;
-import edu.fontysmaua.tournamentapi.business.TournamentUpdateUseCase;
 import jakarta.validation.constraints.Positive;
-import org.springframework.web.bind.annotation.*;
-import edu.fontysmaua.tournamentapi.business.DeleteTournamentUseCase;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import edu.fontysmaua.tournamentapi.business.GetTournamentByIdUseCase;
 
 @RestController
 @RequestMapping("/tournaments")
 @AllArgsConstructor
 @CrossOrigin(origins = {"http://localhost:5173"})
 public class TournamentController {
-    private final ViewAllTournamentsUseCase viewAllTournamentsView;
-    private final CreateTournamentUseCase createTournamentUseCase;
-    private final TournamentUpdateUseCase tournamentUpdate;
-    private final DeleteTournamentUseCase  deleteTournamentService;
-    private final GetTournamentByIdUseCase getTournamentByIdUseCase;
+    private final TournamentService tournamentService;
 
     @GetMapping
-    public ResponseEntity<List<Tournament>> viewAllTournaments() {
-        List<Tournament> tournaments = viewAllTournamentsView.viewAllTournaments();
-        return ResponseEntity.ok(tournaments);
+    public ResponseEntity<GetAllTournamentsResponse> findAll() {
+        return ResponseEntity.ok(tournamentService.findAll());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<GetTournamentByIdResponse> getById(@PathVariable @Positive Long id) {
+        return ResponseEntity.ok(tournamentService.findTournamentById(id));
     }
   
     @PostMapping
-    public ResponseEntity<CreateTournamentResponse> createTournament(@RequestBody @Valid CreateTournamentRequest request) {
-        CreateTournamentResponse response = createTournamentUseCase.createTournament(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<SavedTournamentResponse> create(@RequestBody @Valid SaveTournamentRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(tournamentService.create(request));
 
     }
     
     @PutMapping("{id}")
-    public ResponseEntity<Tournament> updateTournament(@PathVariable @Positive Long id, @RequestBody @Valid Tournament tournament) {
-        if (!tournament.getId().equals(id)) {
+    public ResponseEntity<SavedTournamentResponse> update(@PathVariable @Positive Long id, @RequestBody @Valid SaveTournamentRequest request) {
+        if (!request.getId().equals(id)) {
             return ResponseEntity.badRequest().build();
         }
 
-        return ResponseEntity.ok(tournamentUpdate.updateTournament(tournament));
+        return ResponseEntity.ok(tournamentService.update(request));
     }
 
     @DeleteMapping("/{id}")
     public Long delete(@PathVariable @Positive Long id) {
-        return deleteTournamentService.delete(id);
-    }
-
-    @GetMapping("/{id}")
-    public Tournament getTournament(@PathVariable Long id) {
-        return getTournamentByIdUseCase.getTournamentById(id);
+        return tournamentService.delete(id);
     }
 }

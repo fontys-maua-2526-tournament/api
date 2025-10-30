@@ -1,6 +1,6 @@
 package edu.fontysmaua.tournamentapi.mapper;
 
-import edu.fontysmaua.tournamentapi.domain.Team.Team;
+import edu.fontysmaua.tournamentapi.domain.Team;
 import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
 import org.mapstruct.Mapper;
 

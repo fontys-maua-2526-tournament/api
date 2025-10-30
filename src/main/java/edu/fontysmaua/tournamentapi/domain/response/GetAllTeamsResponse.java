@@ -1,6 +1,6 @@
-package edu.fontysmaua.tournamentapi.domain.Team.response;
+package edu.fontysmaua.tournamentapi.domain.response;
 
-import edu.fontysmaua.tournamentapi.domain.Team.Team;
+import edu.fontysmaua.tournamentapi.domain.Team;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

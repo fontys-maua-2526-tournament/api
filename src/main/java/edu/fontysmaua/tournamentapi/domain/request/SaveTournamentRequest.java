@@ -1,4 +1,4 @@
-package edu.fontysmaua.tournamentapi.domain.dto.tournament;
+package edu.fontysmaua.tournamentapi.domain.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -13,7 +13,8 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateTournamentRequest {
+public class SaveTournamentRequest {
+    private Long id;
     @NotBlank
     private String name;
     @NotBlank

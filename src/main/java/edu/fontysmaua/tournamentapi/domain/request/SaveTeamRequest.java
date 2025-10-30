@@ -1,4 +1,4 @@
-package edu.fontysmaua.tournamentapi.domain.Team.request;
+package edu.fontysmaua.tournamentapi.domain.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

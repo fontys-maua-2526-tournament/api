@@ -26,7 +26,7 @@ public class TournamentServiceImpl implements TournamentService {
     }
 
     @Override
-    public GetTournamentByIdResponse findTournamentById(Long id) {
+    public GetTournamentByIdResponse findById(Long id) {
         if(id == null){
             throw new IllegalArgumentException("ID cannot be null");
         }

@@ -30,7 +30,7 @@ public class TournamentController {
 
     @GetMapping("/{id}")
     public ResponseEntity<GetTournamentByIdResponse> getById(@PathVariable @Positive Long id) {
-        return ResponseEntity.ok(tournamentService.findTournamentById(id));
+        return ResponseEntity.ok(tournamentService.findById(id));
     }
   
     @PostMapping

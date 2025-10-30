@@ -1,8 +1,9 @@
 package edu.fontysmaua.tournamentapi.controller;
 
-import edu.fontysmaua.tournamentapi.business.CreateTournamentUseCase;
+import edu.fontysmaua.tournamentapi.domain.Tournament;
 import edu.fontysmaua.tournamentapi.domain.request.SaveTournamentRequest;
-import edu.fontysmaua.tournamentapi.domain.response.CreateTournamentResponse;
+import edu.fontysmaua.tournamentapi.domain.response.SavedTournamentResponse;
+import edu.fontysmaua.tournamentapi.service.TournamentService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,7 @@ class TournamentControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private CreateTournamentUseCase createTournamentUseCaseMock;
+    private TournamentService tournamentService;
 
     @Test
     void createTournament_shouldReturn200ResponseWithTournamentId() throws Exception {
@@ -42,11 +43,11 @@ class TournamentControllerTest {
                 .endTime(LocalDateTime.of(LocalDate.of(2026,1,30), LocalTime.of(9, 0)))
                 .build();
 
-        CreateTournamentResponse response = CreateTournamentResponse.builder()
-                .id(1L)
-                .build();
+        Tournament tournament = new Tournament();
+        tournament.setId(1L);
+        SavedTournamentResponse response = new SavedTournamentResponse(tournament);
 
-        when(createTournamentUseCaseMock.createTournament(request))
+        when(tournamentService.create(request))
                 .thenReturn(response);
 
         // Act
@@ -64,11 +65,11 @@ class TournamentControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Content-Type", APPLICATION_JSON_VALUE))
                 .andExpect(content().json("""
-                  {"id": 1}
+                  {"tournament": {"id": 1}}
                 """));
 
         // Assert
-        verify(createTournamentUseCaseMock, times(1)).createTournament(request);
+        verify(tournamentService, times(1)).create(request);
     }
 
     @Test
@@ -88,6 +89,6 @@ class TournamentControllerTest {
                 .andExpect(status().isBadRequest());
 
         // Assert
-        verify(createTournamentUseCaseMock, never()).createTournament(any(SaveTournamentRequest.class));
+        verify(tournamentService, never()).create(any(SaveTournamentRequest.class));
     }
 }

@@ -7,4 +7,8 @@ public class NameAlreadyExistsException extends ResponseStatusException {
     public NameAlreadyExistsException() {
         super(HttpStatus.BAD_REQUEST, "NAME_ALREADY_EXISTS");
     }
+
+    public NameAlreadyExistsException(String message) {
+        super(HttpStatus.BAD_REQUEST, message);
+    }
 }

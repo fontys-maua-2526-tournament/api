@@ -1,8 +1,8 @@
 package edu.fontysmaua.tournamentapi.persistence;
 
-import edu.fontysmaua.tournamentapi.persistence.entity.CoachEntity;
+import edu.fontysmaua.tournamentapi.persistence.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface CoachRepository extends JpaRepository<CoachEntity, Long> {
+public interface UserRepository extends JpaRepository<UserEntity, Long> {
     boolean existsByEmail(String email);
 }

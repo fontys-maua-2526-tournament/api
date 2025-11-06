@@ -14,6 +14,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 @AllArgsConstructor
 public class TournamentServiceImpl implements TournamentService {
@@ -22,7 +25,10 @@ public class TournamentServiceImpl implements TournamentService {
 
     @Override
     public GetAllTournamentsResponse findAll() {
-        return new GetAllTournamentsResponse(tournamentMapper.entitiesToModels(tournamentRepository.findAll(Sort.by(Sort.Direction.ASC, "id"))));
+        List<TournamentEntity> tournaments = tournamentRepository.findAll();
+        GetAllTournamentsResponse response = new GetAllTournamentsResponse();
+        response.setTournaments(tournamentMapper.entitiesToModels(tournaments));
+        return response;
     }
 
     @Override

@@ -1,47 +1,44 @@
 package edu.fontysmaua.tournamentapi.service.impl;
 
-import edu.fontysmaua.tournamentapi.domain.Coach;
 import edu.fontysmaua.tournamentapi.domain.request.SaveCoachRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllCoachesResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedCoachResponse;
 import edu.fontysmaua.tournamentapi.exception.NameAlreadyExistsException;
-import edu.fontysmaua.tournamentapi.mapper.CoachMapper;
-import edu.fontysmaua.tournamentapi.persistence.CoachRepository;
+import edu.fontysmaua.tournamentapi.mapper.UserMapper;
+import edu.fontysmaua.tournamentapi.persistence.UserRepository;
 import edu.fontysmaua.tournamentapi.persistence.TeamRepository;
 import edu.fontysmaua.tournamentapi.persistence.TournamentRepository;
-import edu.fontysmaua.tournamentapi.persistence.entity.CoachEntity;
+import edu.fontysmaua.tournamentapi.persistence.entity.UserEntity;
 import edu.fontysmaua.tournamentapi.service.CoachService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 @AllArgsConstructor
 public class CoachServiceImpl implements CoachService {
-    private final CoachRepository coachRepository;
+    private final UserRepository userRepository;
     private final TeamRepository teamRepository;
     private final TournamentRepository tournamentRepository;
-    private final CoachMapper coachMapper;
+    private final UserMapper userMapper;
 
     @Override
     public GetAllCoachesResponse findAll() {
-        var coaches = coachMapper.entitiesToModels(coachRepository.findAll());
+        var coaches = userMapper.entitiesToModels(userRepository.findAll());
         return new GetAllCoachesResponse(coaches);
     }
 
     @Override
     public SavedCoachResponse create(SaveCoachRequest request) {
-        if (coachRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmail(request.getEmail())) {
             throw new NameAlreadyExistsException("Email already exists");
         }
 
-        var coachEntity = new CoachEntity();
-        coachEntity.setName(request.getName());
-        coachEntity.setEmail(request.getEmail());
+        var userEntity = new UserEntity();
+        userEntity.setFirstName(request.getName());
+        userEntity.setEmail(request.getEmail());
 
-        var saved = coachRepository.save(coachEntity);
-        return new SavedCoachResponse(coachMapper.entityToModel(saved));
+        var saved = userRepository.save(userEntity);
+        return new SavedCoachResponse(userMapper.entityToModel(saved));
     }
 
     @Override
@@ -50,14 +47,14 @@ public class CoachServiceImpl implements CoachService {
             throw new IllegalArgumentException("Id is required");
         }
 
-        var existing = coachRepository.findById(request.getId())
+        var existing = userRepository.findById(request.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Coach not found"));
 
-        existing.setName(request.getName());
+        existing.setFirstName(request.getName());
         existing.setEmail(request.getEmail());
 
-        var updated = coachRepository.save(existing);
-        return new SavedCoachResponse(coachMapper.entityToModel(updated));
+        var updated = userRepository.save(existing);
+        return new SavedCoachResponse(userMapper.entityToModel(updated));
     }
 
     @Override
@@ -65,7 +62,7 @@ public class CoachServiceImpl implements CoachService {
         if (id == null || id <= 0) {
             throw new IllegalArgumentException("Invalid coach id");
         }
-        coachRepository.deleteById(id);
+        userRepository.deleteById(id);
         return id;
     }
 

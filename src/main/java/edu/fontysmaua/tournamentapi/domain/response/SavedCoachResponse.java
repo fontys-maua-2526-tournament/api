@@ -1,6 +1,6 @@
 package edu.fontysmaua.tournamentapi.domain.response;
 
-import edu.fontysmaua.tournamentapi.domain.Coach;
+import edu.fontysmaua.tournamentapi.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SavedCoachResponse {
-    private Coach coach;
+    private User user;
 }

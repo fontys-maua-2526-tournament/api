@@ -25,4 +25,5 @@ public class Tournament {
     @NotBlank
     private LocalDateTime endTime;
     private Status status;
+    private String inviteCode;
 }

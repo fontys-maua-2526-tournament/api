@@ -38,10 +38,12 @@ class TeamServiceImplTest {
         teamEntity = new TeamEntity();
         teamEntity.setId(1L);
         teamEntity.setName("Team 1");
+        teamEntity.setInvite("INVITECODEBLABLABLABLA123");
 
         team = new Team();
         team.setId(teamEntity.getId());
         team.setName(teamEntity.getName());
+        team.setInviteCode(teamEntity.getInvite());
     }
 
     // --- getAll() tests ---
@@ -122,7 +124,7 @@ class TeamServiceImplTest {
 
     @Test
     void updateTeam_fail() {
-        assertThrows(IllegalArgumentException.class, () -> teamService.update(new SaveTeamRequest(team.getId(), team.getName())));
+        assertThrows(IllegalArgumentException.class, () -> teamService.update(new SaveTeamRequest(team.getId(), team.getName(), team.getInviteCode())));
         verify(teamRepository, times(1)).existsById(any(Long.class));
         verify(teamRepository, times(0)).save(any(TeamEntity.class));
     }
@@ -132,7 +134,7 @@ class TeamServiceImplTest {
         when(teamRepository.existsById(any(Long.class))).thenReturn(true);
         when(teamRepository.save(any(TeamEntity.class))).thenReturn(teamEntity);
 
-        assertDoesNotThrow(() -> teamService.update(new SaveTeamRequest(teamEntity.getId(), teamEntity.getName())));
+        assertDoesNotThrow(() -> teamService.update(new SaveTeamRequest(teamEntity.getId(), teamEntity.getName(), team.getInviteCode())));
         verify(teamRepository, times(1)).existsById(any(Long.class));
         verify(teamRepository, times(1)).save(any(TeamEntity.class));
     }
@@ -141,7 +143,7 @@ class TeamServiceImplTest {
     void createTeam_success() {
         when(teamRepository.save(any(TeamEntity.class))).thenReturn(teamEntity);
 
-        teamService.create(new SaveTeamRequest(teamEntity.getId(), teamEntity.getName()));
+        teamService.create(new SaveTeamRequest(teamEntity.getId(), teamEntity.getName(), team.getInviteCode()));
 
         verify(teamRepository, times(1)).save(any(TeamEntity.class));
     }

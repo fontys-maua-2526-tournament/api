@@ -30,6 +30,7 @@ public class TeamServiceImpl implements TeamService {
     public SavedTeamResponse create(SaveTeamRequest request) {
         var team = new TeamEntity();
         team.setName(request.getName());
+        team.setInvite(request.getInviteCode());
 
         var saved = teamRepository.save(team);
 
@@ -48,6 +49,7 @@ public class TeamServiceImpl implements TeamService {
         var team = new TeamEntity();
         team.setId(request.getId());
         team.setName(request.getName());
+        team.setInvite(request.getInviteCode());
 
         var updated = teamRepository.save(team);
 

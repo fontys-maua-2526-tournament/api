@@ -5,6 +5,7 @@ import edu.fontysmaua.tournamentapi.domain.request.SaveTournamentRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllTournamentsResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetTournamentByIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedTournamentResponse;
+import edu.fontysmaua.tournamentapi.enums.Status;
 import edu.fontysmaua.tournamentapi.exception.NameAlreadyExistsException;
 import edu.fontysmaua.tournamentapi.mapper.TournamentMapper;
 import edu.fontysmaua.tournamentapi.persistence.TournamentRepository;
@@ -431,5 +432,102 @@ class TournamentServiceImplTest {
         assertEquals("Tournament doesn't exist in the database", exception.getMessage());
         verify(tournamentRepository, times(1)).existsById(id);
         verify(tournamentRepository, never()).deleteById(any());
+    }
+
+    // ==================== cancel() Tests ====================
+
+    @Test
+    void cancel_ShouldReturnTournamentId_WhenTournamentExists() {
+        // Arrange
+        Long tournamentId = 1L;
+        TournamentEntity tournament = TournamentEntity.builder()
+                .id(tournamentId)
+                .name("Spring Championship")
+                .address("123 Main St")
+                .startTime(startTime)
+                .endTime(endTime)
+                .status(Status.SCHEDULED)
+                .build();
+
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(tournamentRepository.save(any(TournamentEntity.class))).thenReturn(tournament);
+
+        // Act
+        Long result = tournamentService.cancel(tournamentId);
+
+        // Assert
+        assertEquals(tournamentId, result);
+        assertEquals(Status.CANCELLED, tournament.getStatus());
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(tournamentRepository, times(1)).save(tournament);
+    }
+
+    @Test
+    void cancel_ShouldThrowEntityNotFoundException_WhenTournamentDoesNotExist() {
+        // Arrange
+        Long tournamentId = 999L;
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        EntityNotFoundException exception = assertThrows(
+                EntityNotFoundException.class,
+                () -> tournamentService.cancel(tournamentId)
+        );
+
+        assertEquals("Tournament not found", exception.getMessage());
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(tournamentRepository, never()).save(any(TournamentEntity.class));
+    }
+
+    @Test
+    void cancel_ShouldChangeStatusToCancelled_WhenTournamentHasDifferentStatus() {
+        // Arrange
+        Long tournamentId = 2L;
+        TournamentEntity tournament = TournamentEntity.builder()
+                .id(tournamentId)
+                .name("Summer Championship")
+                .address("456 Oak Ave")
+                .startTime(startTime)
+                .endTime(endTime)
+                .status(Status.COMPLETED)
+                .build();
+
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(tournamentRepository.save(any(TournamentEntity.class))).thenReturn(tournament);
+
+        // Act
+        Long result = tournamentService.cancel(tournamentId);
+
+        // Assert
+        assertEquals(tournamentId, result);
+        assertEquals(Status.CANCELLED, tournament.getStatus());
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(tournamentRepository, times(1)).save(tournament);
+    }
+
+    @Test
+    void cancel_ShouldSaveWithCancelledStatus_WhenAlreadyCancelled() {
+        // Arrange
+        Long tournamentId = 3L;
+        TournamentEntity tournament = TournamentEntity.builder()
+                .id(tournamentId)
+                .name("Winter Championship")
+                .address("789 Pine Rd")
+                .startTime(startTime)
+                .endTime(endTime)
+                .status(Status.CANCELLED)
+                .build();
+
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(tournamentRepository.save(any(TournamentEntity.class))).thenReturn(tournament);
+
+        // Act
+        Long result = tournamentService.cancel(tournamentId);
+
+        // Assert
+        assertEquals(tournamentId, result);
+        assertEquals(Status.CANCELLED, tournament.getStatus());
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(tournamentRepository, times(1)).save(tournament);
     }
 }

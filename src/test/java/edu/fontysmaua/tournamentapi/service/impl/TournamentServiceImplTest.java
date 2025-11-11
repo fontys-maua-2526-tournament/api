@@ -5,6 +5,7 @@ import edu.fontysmaua.tournamentapi.domain.request.SaveTournamentRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllTournamentsResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetTournamentByIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedTournamentResponse;
+import edu.fontysmaua.tournamentapi.enums.Status;
 import edu.fontysmaua.tournamentapi.exception.NameAlreadyExistsException;
 import edu.fontysmaua.tournamentapi.mapper.TournamentMapper;
 import edu.fontysmaua.tournamentapi.persistence.TournamentRepository;
@@ -13,10 +14,10 @@ import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -56,17 +57,10 @@ class TournamentServiceImplTest {
                 .address("123 Main St")
                 .startTime(startTime)
                 .endTime(endTime)
+                .status(Status.SCHEDULED)
                 .build();
 
         tournament = Tournament.builder()
-                .id(1L)
-                .name("Spring Championship")
-                .address("123 Main St")
-                .startTime(startTime)
-                .endTime(endTime)
-                .build();
-
-        SaveTournamentRequest.builder()
                 .id(1L)
                 .name("Spring Championship")
                 .address("123 Main St")
@@ -98,7 +92,7 @@ class TournamentServiceImplTest {
                         .endTime(endTime)
                         .build());
 
-        when(tournamentRepository.findAll(Sort.by(Sort.Direction.ASC, "id"))).thenReturn(entities);
+        when(tournamentRepository.findAll()).thenReturn(entities);
         when(tournamentMapper.entitiesToModels(entities)).thenReturn(tournaments);
 
         // Act
@@ -107,7 +101,7 @@ class TournamentServiceImplTest {
         // Assert
         assertNotNull(response);
         assertEquals(2, response.getTournaments().size());
-        verify(tournamentRepository, times(1)).findAll(Sort.by(Sort.Direction.ASC, "id"));
+        verify(tournamentRepository, times(1)).findAll();
         verify(tournamentMapper, times(1)).entitiesToModels(entities);
     }
 
@@ -115,7 +109,7 @@ class TournamentServiceImplTest {
     void findAll_ShouldReturnEmptyList_WhenNoTournamentsExist() {
         // Arrange
         List<TournamentEntity> emptyList = new ArrayList<>();
-        when(tournamentRepository.findAll(Sort.by(Sort.Direction.ASC, "id"))).thenReturn(emptyList);
+        when(tournamentRepository.findAll()).thenReturn(emptyList);
         when(tournamentMapper.entitiesToModels(emptyList)).thenReturn(List.of());
 
         // Act
@@ -124,7 +118,7 @@ class TournamentServiceImplTest {
         // Assert
         assertNotNull(response);
         assertTrue(response.getTournaments().isEmpty());
-        verify(tournamentRepository, times(1)).findAll(Sort.by(Sort.Direction.ASC, "id"));
+        verify(tournamentRepository, times(1)).findAll();
     }
 
     // ==================== findById() Tests ====================
@@ -202,36 +196,31 @@ class TournamentServiceImplTest {
     // ==================== create() Tests ====================
 
     @Test
-    void create_ShouldCreateTournament_WhenValidRequestProvided() {
+    void create_ShouldCreateTournamentWithScheduledStatus_WhenStartTimeIsInFuture() {
         // Arrange
+        LocalDateTime futureTime = LocalDateTime.now().plusDays(1);
         SaveTournamentRequest request = SaveTournamentRequest.builder()
                 .name("New Tournament")
                 .address("789 Pine Rd")
-                .startTime(startTime)
-                .endTime(endTime)
-                .build();
-
-        TournamentEntity.builder()
-                .name("New Tournament")
-                .address("789 Pine Rd")
-                .startTime(startTime)
-                .endTime(endTime)
+                .startTime(futureTime)
+                .endTime(futureTime.plusHours(8))
                 .build();
 
         TournamentEntity savedEntity = TournamentEntity.builder()
                 .id(3L)
                 .name("New Tournament")
                 .address("789 Pine Rd")
-                .startTime(startTime)
-                .endTime(endTime)
+                .startTime(futureTime)
+                .endTime(futureTime.plusHours(8))
+                .status(Status.SCHEDULED)
                 .build();
 
         Tournament savedTournament = Tournament.builder()
                 .id(3L)
                 .name("New Tournament")
                 .address("789 Pine Rd")
-                .startTime(startTime)
-                .endTime(endTime)
+                .startTime(futureTime)
+                .endTime(futureTime.plusHours(8))
                 .build();
 
         when(tournamentRepository.existsByName("New Tournament")).thenReturn(false);
@@ -244,9 +233,100 @@ class TournamentServiceImplTest {
         // Assert
         assertNotNull(response);
         assertEquals(savedTournament, response.getTournament());
+
+        ArgumentCaptor<TournamentEntity> entityCaptor = ArgumentCaptor.forClass(TournamentEntity.class);
+        verify(tournamentRepository, times(1)).save(entityCaptor.capture());
+        assertEquals(Status.SCHEDULED, entityCaptor.getValue().getStatus());
+
         verify(tournamentRepository, times(1)).existsByName("New Tournament");
-        verify(tournamentRepository, times(1)).save(any(TournamentEntity.class));
         verify(tournamentMapper, times(1)).entityToModel(savedEntity);
+    }
+
+    @Test
+    void create_ShouldCreateTournamentWithCompletedStatus_WhenStartTimeIsInPast() {
+        // Arrange
+        LocalDateTime pastTime = LocalDateTime.now().minusDays(1);
+        SaveTournamentRequest request = SaveTournamentRequest.builder()
+                .name("Past Tournament")
+                .address("789 Pine Rd")
+                .startTime(pastTime)
+                .endTime(pastTime.plusHours(8))
+                .build();
+
+        TournamentEntity savedEntity = TournamentEntity.builder()
+                .id(3L)
+                .name("Past Tournament")
+                .address("789 Pine Rd")
+                .startTime(pastTime)
+                .endTime(pastTime.plusHours(8))
+                .status(Status.COMPLETED)
+                .build();
+
+        Tournament savedTournament = Tournament.builder()
+                .id(3L)
+                .name("Past Tournament")
+                .address("789 Pine Rd")
+                .startTime(pastTime)
+                .endTime(pastTime.plusHours(8))
+                .build();
+
+        when(tournamentRepository.existsByName("Past Tournament")).thenReturn(false);
+        when(tournamentRepository.save(any(TournamentEntity.class))).thenReturn(savedEntity);
+        when(tournamentMapper.entityToModel(savedEntity)).thenReturn(savedTournament);
+
+        // Act
+        SavedTournamentResponse response = tournamentService.create(request);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(savedTournament, response.getTournament());
+
+        ArgumentCaptor<TournamentEntity> entityCaptor = ArgumentCaptor.forClass(TournamentEntity.class);
+        verify(tournamentRepository, times(1)).save(entityCaptor.capture());
+        assertEquals(Status.COMPLETED, entityCaptor.getValue().getStatus());
+    }
+
+    @Test
+    void create_ShouldCreateTournamentWithNullStatus_WhenStartTimeIsNull() {
+        // Arrange
+        SaveTournamentRequest request = SaveTournamentRequest.builder()
+                .name("No Time Tournament")
+                .address("789 Pine Rd")
+                .startTime(null)
+                .endTime(endTime)
+                .build();
+
+        TournamentEntity savedEntity = TournamentEntity.builder()
+                .id(3L)
+                .name("No Time Tournament")
+                .address("789 Pine Rd")
+                .startTime(null)
+                .endTime(endTime)
+                .status(null)
+                .build();
+
+        Tournament savedTournament = Tournament.builder()
+                .id(3L)
+                .name("No Time Tournament")
+                .address("789 Pine Rd")
+                .startTime(null)
+                .endTime(endTime)
+                .build();
+
+        when(tournamentRepository.existsByName("No Time Tournament")).thenReturn(false);
+        when(tournamentRepository.save(any(TournamentEntity.class))).thenReturn(savedEntity);
+        when(tournamentMapper.entityToModel(savedEntity)).thenReturn(savedTournament);
+
+        // Act
+        SavedTournamentResponse response = tournamentService.create(request);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(savedTournament, response.getTournament());
+
+        ArgumentCaptor<TournamentEntity> entityCaptor = ArgumentCaptor.forClass(TournamentEntity.class);
+        verify(tournamentRepository, times(1)).save(entityCaptor.capture());
+        assertNull(entityCaptor.getValue().getStatus());
     }
 
     @Test
@@ -431,5 +511,102 @@ class TournamentServiceImplTest {
         assertEquals("Tournament doesn't exist in the database", exception.getMessage());
         verify(tournamentRepository, times(1)).existsById(id);
         verify(tournamentRepository, never()).deleteById(any());
+    }
+
+    // ==================== cancel() Tests ====================
+
+    @Test
+    void cancel_ShouldReturnTournamentId_WhenTournamentExists() {
+        // Arrange
+        Long tournamentId = 1L;
+        TournamentEntity tournament = TournamentEntity.builder()
+                .id(tournamentId)
+                .name("Spring Championship")
+                .address("123 Main St")
+                .startTime(startTime)
+                .endTime(endTime)
+                .status(Status.SCHEDULED)
+                .build();
+
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(tournamentRepository.save(any(TournamentEntity.class))).thenReturn(tournament);
+
+        // Act
+        Long result = tournamentService.cancel(tournamentId);
+
+        // Assert
+        assertEquals(tournamentId, result);
+        assertEquals(Status.CANCELLED, tournament.getStatus());
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(tournamentRepository, times(1)).save(tournament);
+    }
+
+    @Test
+    void cancel_ShouldThrowEntityNotFoundException_WhenTournamentDoesNotExist() {
+        // Arrange
+        Long tournamentId = 999L;
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        EntityNotFoundException exception = assertThrows(
+                EntityNotFoundException.class,
+                () -> tournamentService.cancel(tournamentId)
+        );
+
+        assertEquals("Tournament not found", exception.getMessage());
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(tournamentRepository, never()).save(any(TournamentEntity.class));
+    }
+
+    @Test
+    void cancel_ShouldChangeStatusToCancelled_WhenTournamentHasDifferentStatus() {
+        // Arrange
+        Long tournamentId = 2L;
+        TournamentEntity tournament = TournamentEntity.builder()
+                .id(tournamentId)
+                .name("Summer Championship")
+                .address("456 Oak Ave")
+                .startTime(startTime)
+                .endTime(endTime)
+                .status(Status.COMPLETED)
+                .build();
+
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(tournamentRepository.save(any(TournamentEntity.class))).thenReturn(tournament);
+
+        // Act
+        Long result = tournamentService.cancel(tournamentId);
+
+        // Assert
+        assertEquals(tournamentId, result);
+        assertEquals(Status.CANCELLED, tournament.getStatus());
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(tournamentRepository, times(1)).save(tournament);
+    }
+
+    @Test
+    void cancel_ShouldSaveWithCancelledStatus_WhenAlreadyCancelled() {
+        // Arrange
+        Long tournamentId = 3L;
+        TournamentEntity tournament = TournamentEntity.builder()
+                .id(tournamentId)
+                .name("Winter Championship")
+                .address("789 Pine Rd")
+                .startTime(startTime)
+                .endTime(endTime)
+                .status(Status.CANCELLED)
+                .build();
+
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(tournamentRepository.save(any(TournamentEntity.class))).thenReturn(tournament);
+
+        // Act
+        Long result = tournamentService.cancel(tournamentId);
+
+        // Assert
+        assertEquals(tournamentId, result);
+        assertEquals(Status.CANCELLED, tournament.getStatus());
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(tournamentRepository, times(1)).save(tournament);
     }
 }

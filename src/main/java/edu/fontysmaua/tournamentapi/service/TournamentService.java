@@ -16,4 +16,5 @@ public interface TournamentService {
     SavedTournamentResponse update(SaveTournamentRequest request);
 
     Long delete(Long tournamentId);
+    Long cancel(Long tournamentId);
 }

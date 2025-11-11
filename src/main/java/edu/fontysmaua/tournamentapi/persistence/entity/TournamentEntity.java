@@ -1,5 +1,6 @@
 package edu.fontysmaua.tournamentapi.persistence.entity;
 
+import edu.fontysmaua.tournamentapi.enums.Status;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -25,6 +26,9 @@ public class TournamentEntity {
     @Column(name = "id")
     private Long id;
 
+    @Column(name="invite")
+    private String invite;
+
     @NotBlank
     @Length(min = 2, max = 50)
     @Column(name = "name")
@@ -38,6 +42,9 @@ public class TournamentEntity {
     @NotNull
     @Column(name = "start_time")
     private LocalDateTime startTime;
+
+    @Column(name ="status")
+    private Status status;
 
     @NotNull
     @Column(name = "end_time")

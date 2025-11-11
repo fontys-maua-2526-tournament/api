@@ -1,5 +1,6 @@
 package edu.fontysmaua.tournamentapi.domain;
 
+import edu.fontysmaua.tournamentapi.enums.Status;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,4 +24,5 @@ public class Tournament {
     private LocalDateTime startTime;
     @NotBlank
     private LocalDateTime endTime;
+    private Status status;
 }

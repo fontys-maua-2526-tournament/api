@@ -32,13 +32,13 @@ public class TournamentController {
     public ResponseEntity<GetTournamentByIdResponse> getById(@PathVariable @Positive Long id) {
         return ResponseEntity.ok(tournamentService.findById(id));
     }
-  
+
     @PostMapping
     public ResponseEntity<SavedTournamentResponse> create(@RequestBody @Valid SaveTournamentRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(tournamentService.create(request));
 
     }
-    
+
     @PutMapping("{id}")
     public ResponseEntity<SavedTournamentResponse> update(@PathVariable @Positive Long id, @RequestBody @Valid SaveTournamentRequest request) {
         if (!request.getId().equals(id)) {
@@ -49,7 +49,12 @@ public class TournamentController {
     }
 
     @DeleteMapping("/{id}")
-    public Long delete(@PathVariable @Positive Long id) {
-        return tournamentService.delete(id);
+    public ResponseEntity<Long> delete(@PathVariable @Positive Long id) {
+        return ResponseEntity.ok(tournamentService.delete(id));
+    }
+
+    @PutMapping("/cancel/{id}")
+    public ResponseEntity<Long> cancel(@PathVariable @Positive Long id) {
+        return ResponseEntity.ok(tournamentService.cancel(id));
     }
 }

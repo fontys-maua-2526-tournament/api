@@ -28,6 +28,10 @@ public class TeamEntity {
     @Column(name = "name")
     private String name;
 
+    @NotBlank
+    @Column(name = "invite")
+    private String invite;
+
     @ManyToMany(mappedBy = "teams")
     private List<UserEntity> users  = new ArrayList<>();
 

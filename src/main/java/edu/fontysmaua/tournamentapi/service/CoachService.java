@@ -2,10 +2,13 @@ package edu.fontysmaua.tournamentapi.service;
 
 import edu.fontysmaua.tournamentapi.domain.request.SaveCoachRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllCoachesResponse;
+import edu.fontysmaua.tournamentapi.domain.response.GetTournamentsByUserIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedCoachResponse;
 
 public interface CoachService {
     GetAllCoachesResponse findAll();
+
+    GetTournamentsByUserIdResponse findTournamentsByUserId(Long userId);
 
     SavedCoachResponse create(SaveCoachRequest request);
 

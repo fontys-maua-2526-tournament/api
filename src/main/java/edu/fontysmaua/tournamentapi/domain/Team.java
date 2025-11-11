@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class Team {
   private Long id;
   private String name;
+  private String inviteCode;
 }

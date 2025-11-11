@@ -19,6 +19,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.UUID.randomUUID;
+
 @Service
 @AllArgsConstructor
 public class TournamentServiceImpl implements TournamentService {
@@ -54,6 +56,8 @@ public class TournamentServiceImpl implements TournamentService {
             throw new NameAlreadyExistsException();
         }
 
+        String inviteCode = new String(randomUUID().toString().getBytes());
+
         Status status = null;
 
         if (request.getStartTime() != null) {
@@ -71,6 +75,7 @@ public class TournamentServiceImpl implements TournamentService {
                         .startTime(request.getStartTime())
                         .endTime(request.getEndTime())
                         .status(status)
+                        .invite(inviteCode)
                         .build()
                 );
 
@@ -93,6 +98,7 @@ public class TournamentServiceImpl implements TournamentService {
                 .address(request.getAddress())
                 .startTime(request.getStartTime())
                 .endTime(request.getEndTime())
+                .status(request.getStatus())
                 .build();
 
         var response = tournamentRepository.save(entity);

@@ -1,5 +1,6 @@
 package edu.fontysmaua.tournamentapi.domain.request;
 
+import edu.fontysmaua.tournamentapi.enums.Status;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -23,4 +24,5 @@ public class SaveTournamentRequest {
     private LocalDateTime startTime;
     @NotNull
     private LocalDateTime endTime;
+    private Status status;
 }

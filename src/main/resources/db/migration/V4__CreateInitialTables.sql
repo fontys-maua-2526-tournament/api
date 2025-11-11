@@ -1,0 +1,5 @@
+ALTER TABLE team
+    ADD COLUMN invite VARCHAR(256);
+
+ALTER TABLE tournament
+    ADD COLUMN invite VARCHAR(256);

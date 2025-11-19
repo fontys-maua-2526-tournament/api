@@ -2,8 +2,10 @@ package edu.fontysmaua.tournamentapi.service.impl;
 
 import edu.fontysmaua.tournamentapi.domain.request.SaveCoachRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllCoachesResponse;
+import edu.fontysmaua.tournamentapi.domain.response.GetTournamentsByUserIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedCoachResponse;
 import edu.fontysmaua.tournamentapi.exception.NameAlreadyExistsException;
+import edu.fontysmaua.tournamentapi.mapper.TournamentMapper;
 import edu.fontysmaua.tournamentapi.mapper.UserMapper;
 import edu.fontysmaua.tournamentapi.persistence.UserRepository;
 import edu.fontysmaua.tournamentapi.persistence.TeamRepository;
@@ -20,6 +22,7 @@ public class CoachServiceImpl implements CoachService {
     private final TeamRepository teamRepository;
     private final TournamentRepository tournamentRepository;
     private final UserMapper userMapper;
+    private final TournamentMapper tournamentMapper;
 
     @Override
     public GetAllCoachesResponse findAll() {
@@ -28,6 +31,11 @@ public class CoachServiceImpl implements CoachService {
     }
 
     @Override
+    public GetTournamentsByUserIdResponse findTournamentsByUserId(Long userId) {
+        return new GetTournamentsByUserIdResponse(tournamentMapper.entitiesToModels(tournamentRepository.findAllByTeamsUsersId(userId)));
+    }
+
+        @Override
     public SavedCoachResponse create(SaveCoachRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new NameAlreadyExistsException("Email already exists");

@@ -2,6 +2,7 @@ package edu.fontysmaua.tournamentapi.controller;
 
 import edu.fontysmaua.tournamentapi.domain.request.SaveCoachRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllCoachesResponse;
+import edu.fontysmaua.tournamentapi.domain.response.GetTournamentsByUserIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedCoachResponse;
 import edu.fontysmaua.tournamentapi.service.CoachService;
 import jakarta.validation.constraints.Positive;
@@ -18,6 +19,11 @@ public class CoachController {
     @GetMapping
     public ResponseEntity<GetAllCoachesResponse> findAll() {
         return ResponseEntity.ok(coachService.findAll());
+    }
+
+    @GetMapping("{id}/tournaments")
+    public ResponseEntity<GetTournamentsByUserIdResponse> getTournamentsByUserId(@PathVariable @Positive Long id) {
+        return ResponseEntity.ok(coachService.findTournamentsByUserId(id));
     }
 
     @PostMapping("/create")

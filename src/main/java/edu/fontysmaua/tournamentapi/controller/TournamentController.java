@@ -3,6 +3,7 @@ package edu.fontysmaua.tournamentapi.controller;
 import edu.fontysmaua.tournamentapi.domain.request.SaveTournamentRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllTournamentsResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetTournamentByIdResponse;
+import edu.fontysmaua.tournamentapi.domain.response.GetTournamentsByUserIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedTournamentResponse;
 import edu.fontysmaua.tournamentapi.service.TournamentService;
 import jakarta.validation.Valid;

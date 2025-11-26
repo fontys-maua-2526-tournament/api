@@ -12,6 +12,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@Table(name = "user")
 public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,6 +24,7 @@ public class UserEntity {
     private String password;
     private String phoneNumber;
     private LocalDate dateOfBirth;
+    @Enumerated(EnumType.STRING)
     private UserRole userRole;
 
     @ManyToMany

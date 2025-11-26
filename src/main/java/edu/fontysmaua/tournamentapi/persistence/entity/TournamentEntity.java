@@ -43,6 +43,7 @@ public class TournamentEntity {
     @Column(name = "start_time")
     private LocalDateTime startTime;
 
+    @Enumerated(EnumType.STRING)
     @Column(name ="status")
     private Status status;
 

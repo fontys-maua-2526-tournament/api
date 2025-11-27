@@ -16,7 +16,8 @@ public interface CoachService {
 
     Long delete(Long id);
 
-    void disbandTeam(Long teamId); 
+    void disbandTeam(Long teamId);
+
     void registerTeamInTournament(Long teamId, Long tournamentId);
 
     void withdrawTeamFromTournament(Long teamId, Long tournamentId);

@@ -76,10 +76,7 @@ public class CoachServiceImpl implements CoachService {
 
     @Override
     public void disbandTeam(Long teamId) {
-        if (!teamRepository.existsById(teamId)) {
-            throw new IllegalArgumentException("Team does not exist");
-        }
-        teamRepository.deleteById(teamId);
+
     }
 
     @Override

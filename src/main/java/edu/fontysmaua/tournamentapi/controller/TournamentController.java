@@ -51,11 +51,6 @@ public class TournamentController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Long> delete(@PathVariable @Positive Long id) {
-        return ResponseEntity.ok(tournamentService.delete(id));
-    }
-
-    @PutMapping("/cancel/{id}")
-    public ResponseEntity<Long> cancel(@PathVariable @Positive Long id) {
         return ResponseEntity.ok(tournamentService.cancel(id));
     }
 }

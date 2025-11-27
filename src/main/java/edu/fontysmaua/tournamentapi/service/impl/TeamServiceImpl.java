@@ -82,7 +82,7 @@ public class TeamServiceImpl implements TeamService {
         userEntity.getTeams().add(teamEntity);
         userRepository.save(userEntity);
 
-        List<TeamEntity> userTeams = new ArrayList<>(teamRepository.findAllByUserId(userId).get());
+        List<TeamEntity> userTeams = new ArrayList<>(userEntity.getTeams());
         GetTeamsByUserIdResponse dto = new GetTeamsByUserIdResponse();
 
         dto.setTeams(teamMapper.entitiesToModels(userTeams));

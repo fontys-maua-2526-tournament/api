@@ -7,6 +7,9 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class MatchEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

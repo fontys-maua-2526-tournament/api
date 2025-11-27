@@ -26,4 +26,9 @@ public class MatchController {
     public ResponseEntity<GetAllUpcomingMatchesResponse> findAllUpcoming() {
         return ResponseEntity.ok(matchService.findAllUpcoming());
     }
+
+    @PostMapping
+    public ResponseEntity<SavedMatchResponse> create(@RequestBody @Valid SaveMatchRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(matchService.create(request));
+    }
 }

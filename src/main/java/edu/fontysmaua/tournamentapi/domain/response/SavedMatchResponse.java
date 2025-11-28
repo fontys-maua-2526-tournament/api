@@ -1,4 +1,4 @@
-package edu.fontysmaua.tournamentapi.domain;
+package edu.fontysmaua.tournamentapi.domain.response;
 
 import edu.fontysmaua.tournamentapi.domain.Match;
 import lombok.AllArgsConstructor;

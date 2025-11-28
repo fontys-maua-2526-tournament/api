@@ -1,9 +1,12 @@
 package edu.fontysmaua.tournamentapi.controller;
 
+import edu.fontysmaua.tournamentapi.domain.request.SaveMatchRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllMatchesResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllUpcomingMatchesResponse;
+import edu.fontysmaua.tournamentapi.domain.response.SavedMatchResponse;
 import edu.fontysmaua.tournamentapi.service.MatchService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;

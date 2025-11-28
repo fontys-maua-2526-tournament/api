@@ -7,10 +7,16 @@ import edu.fontysmaua.tournamentapi.domain.response.GetAllUpcomingMatchesRespons
 import edu.fontysmaua.tournamentapi.domain.response.SavedMatchResponse;
 import edu.fontysmaua.tournamentapi.mapper.MatchMapper;
 import edu.fontysmaua.tournamentapi.persistence.MatchRepository;
+import edu.fontysmaua.tournamentapi.persistence.TeamRepository;
+import edu.fontysmaua.tournamentapi.persistence.TournamentRepository;
 import edu.fontysmaua.tournamentapi.persistence.entity.MatchEntity;
+import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
+import edu.fontysmaua.tournamentapi.persistence.entity.TournamentEntity;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -28,14 +34,27 @@ class MatchServiceImplTest {
 
     @Mock
     private MatchRepository matchRepository;
+
     @Mock
     private MatchMapper matchMapper;
+
+    @Mock
+    private TournamentRepository tournamentRepository;
+
+    @Mock
+    private TeamRepository teamRepository;
 
     @InjectMocks
     private MatchServiceImpl matchService;
 
     private MatchEntity matchEntity;
     private Match match;
+
+    private TournamentEntity tournament;
+    private TeamEntity team1;
+    private TeamEntity team2;
+
+    private SaveMatchRequest saveMatchRequest;
 
     @BeforeEach
     void setUp() {
@@ -50,6 +69,24 @@ class MatchServiceImplTest {
         match.setRound(matchEntity.getRound());
         match.setTeam1Score(matchEntity.getTeam1Score());
         match.setTeam2Score(matchEntity.getTeam2Score());
+        
+        tournament = new TournamentEntity();
+        tournament.setId(10L);
+
+        team1 = new TeamEntity();
+        team1.setId(100L);
+        
+        team2 = new TeamEntity();
+        team2.setId(200L);
+
+        saveMatchRequest = SaveMatchRequest.builder()
+            .round(1)
+            .tournamentId(10L)
+            .team1Id(100L)
+            .team2Id(200L)
+            .team1Score(2)
+            .team2Score(1)
+            .build();
     }
 
     // --- findAll() tests ---
@@ -142,38 +179,6 @@ class MatchServiceImplTest {
     }
 
     // ==================== create() Tests ====================
-
-    @Mock
-    private TournamentRepository tournamentRepository;
-
-    @Mock
-    private TeamRepository teamRepository;
-
-    private TournamentEntity tournament;
-    private TeamEntity team1;
-    private TeamEntity team2;
-    private SaveMatchRequest saveMatchRequest;
-
-    @BeforeEach
-    void setupCreateTests() {
-        tournament = new TournamentEntity();
-        tournament.setId(10L);
-
-        team1 = new TeamEntity();
-        team1.setId(100L);
-
-        team2 = new TeamEntity();
-        team2.setId(200L);
-
-        saveMatchRequest = SaveMatchRequest.builder()
-            .round(1)
-            .tournamentId(10L)
-            .team1Id(100L)
-            .team2Id(200L)
-            .team1Score(2)
-            .team2Score(1)
-            .build();
-    }
 
     /* --- SUCCESS CASE --- */
     @Test

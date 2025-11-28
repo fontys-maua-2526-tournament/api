@@ -1,9 +1,16 @@
 package edu.fontysmaua.tournamentapi.service.impl;
 
+import edu.fontysmaua.tournamentapi.domain.request.SaveMatchRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllMatchesResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllUpcomingMatchesResponse;
+import edu.fontysmaua.tournamentapi.domain.response.SavedMatchResponse;
 import edu.fontysmaua.tournamentapi.mapper.MatchMapper;
 import edu.fontysmaua.tournamentapi.persistence.MatchRepository;
+import edu.fontysmaua.tournamentapi.persistence.TeamRepository;
+import edu.fontysmaua.tournamentapi.persistence.TournamentRepository;
+import edu.fontysmaua.tournamentapi.persistence.entity.MatchEntity;
+import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
+import edu.fontysmaua.tournamentapi.persistence.entity.TournamentEntity;
 import edu.fontysmaua.tournamentapi.service.MatchService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,6 +21,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class MatchServiceImpl implements MatchService {
     private final MatchRepository matchRepository;
+    private final TournamentRepository tournamentRepository;
+    private final TeamRepository teamRepository;
     private final MatchMapper matchMapper;
 
     @Override

@@ -11,6 +11,4 @@ public interface MatchService {
     GetAllUpcomingMatchesResponse findAllUpcoming();
 
     SavedMatchResponse create(SaveMatchRequest request);
-
-    SavedMatchResponse update(SaveMatchRequest request);
 }

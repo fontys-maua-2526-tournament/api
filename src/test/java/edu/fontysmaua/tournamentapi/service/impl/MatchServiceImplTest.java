@@ -4,6 +4,7 @@ import edu.fontysmaua.tournamentapi.domain.Match;
 import edu.fontysmaua.tournamentapi.domain.request.SaveMatchRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllMatchesResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllUpcomingMatchesResponse;
+import edu.fontysmaua.tournamentapi.domain.response.GetMatchByIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedMatchResponse;
 import edu.fontysmaua.tournamentapi.mapper.MatchMapper;
 import edu.fontysmaua.tournamentapi.persistence.MatchRepository;
@@ -13,6 +14,7 @@ import edu.fontysmaua.tournamentapi.persistence.entity.MatchEntity;
 import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
 import edu.fontysmaua.tournamentapi.persistence.entity.TournamentEntity;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,6 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -128,6 +131,68 @@ class MatchServiceImplTest {
         verify(matchMapper, times(1)).entitiesToModels(anyList());
     }
 
+    // --- findById() tests ---
+    @Test
+    void findById_ShouldReturnMatch_WhenIdIsValid() {
+        when(matchRepository.findById(1L)).thenReturn(Optional.of(matchEntity));
+        when(matchMapper.entityToModel(matchEntity)).thenReturn(match);
+
+        GetMatchByIdResponse response = matchService.findById(1L);
+
+        assertNotNull(response);
+        assertEquals(match, response.getMatch());
+
+        verify(matchRepository).findById(1L);
+        verify(matchMapper).entityToModel(matchEntity);
+    }
+
+    @Test
+    void findById_ShouldThrowException_WhenIdIsNull() {
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> matchService.findById(null)
+        );
+        assertEquals("Match ID cannot be null.", ex.getMessage());
+
+        verify(matchRepository, never()).findById(any());
+    }
+
+    @Test
+    void findById_ShouldThrowException_WhenIdIsZero() {
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> matchService.findById(0L)
+        );
+        assertEquals("Match ID must be greater than 0.", ex.getMessage());
+
+        verify(matchRepository, never()).findById(any());
+    }
+
+    @Test
+    void findById_ShouldThrowException_WhenIdIsNegative() {
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> matchService.findById(-1L)
+        );
+        assertEquals("Match ID must be greater than 0.", ex.getMessage());
+
+        verify(matchRepository, never()).findById(any());
+    }
+
+    @Test
+    void findById_ShouldThrowException_WhenMatchNotFound() {
+        when(matchRepository.findById(999L)).thenReturn(Optional.empty());
+
+        EntityNotFoundException ex = assertThrows(
+                EntityNotFoundException.class,
+                () -> matchService.findById(999L)
+        );
+        assertEquals("Match not found", ex.getMessage());
+
+        verify(matchRepository).findById(999L);
+        verify(matchMapper, never()).entityToModel(any());
+    }
+
     // --- findAllUpcoming() tests ---
 
     @Test
@@ -178,7 +243,8 @@ class MatchServiceImplTest {
         }
     }
 
-    // ==================== create() Tests ====================
+    // --- create() tests ---
+
 
     /* --- SUCCESS CASE --- */
     @Test
@@ -256,5 +322,136 @@ class MatchServiceImplTest {
             () -> matchService.create(saveMatchRequest));
 
         verify(matchRepository, never()).save(any());
+    }
+
+    // --- update() tests ---
+    @Test
+    void update_ShouldUpdateMatch_WhenValidRequest() {
+        SaveMatchRequest request = SaveMatchRequest.builder()
+                .id(1L)
+                .round(3)
+                .tournamentId(10L)
+                .team1Id(100L)
+                .team2Id(200L)
+                .team1Score(5)
+                .team2Score(6)
+                .build();
+
+        MatchEntity updatedEntity = MatchEntity.builder()
+                .id(1L)
+                .round(3)
+                .tournament(tournament)
+                .team1(team1)
+                .team2(team2)
+                .team1Score(5)
+                .team2Score(6)
+                .build();
+
+        Match updatedMatch = Match.builder()
+                .id(1L)
+                .round(3)
+                .team1Score(5)
+                .team2Score(6)
+                .build();
+
+        when(matchRepository.existsById(1L)).thenReturn(true);
+        when(tournamentRepository.findById(10L)).thenReturn(Optional.of(tournament));
+        when(teamRepository.findById(100L)).thenReturn(Optional.of(team1));
+        when(teamRepository.findById(200L)).thenReturn(Optional.of(team2));
+        when(matchRepository.save(any())).thenReturn(updatedEntity);
+        when(matchMapper.entityToModel(updatedEntity)).thenReturn(updatedMatch);
+
+        SavedMatchResponse response = matchService.update(request);
+
+        assertNotNull(response);
+        assertEquals(updatedMatch, response.getMatch());
+
+        verify(matchRepository).existsById(1L);
+        verify(matchRepository).save(any());
+        verify(matchMapper).entityToModel(updatedEntity);
+    }
+
+    @Test
+    void update_ShouldThrow_WhenIdIsNull() {
+        SaveMatchRequest request = SaveMatchRequest.builder()
+                .id(null)
+                .tournamentId(10L)
+                .team1Id(100L)
+                .team2Id(200L)
+                .build();
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> matchService.update(request)
+        );
+
+        assertEquals("Match ID cannot be null", ex.getMessage());
+    }
+
+    @Test
+    void update_ShouldThrow_WhenMatchDoesNotExist() {
+        SaveMatchRequest request = SaveMatchRequest.builder()
+                .id(999L)
+                .tournamentId(10L)
+                .team1Id(100L)
+                .team2Id(200L)
+                .build();
+
+        when(matchRepository.existsById(999L)).thenReturn(false);
+
+        EntityNotFoundException ex = assertThrows(
+                EntityNotFoundException.class,
+                () -> matchService.update(request)
+        );
+
+        assertEquals("Match does not exist in the database", ex.getMessage());
+    }
+
+    @Test
+    void update_ShouldThrow_WhenTournamentNotFound() {
+        SaveMatchRequest request = SaveMatchRequest.builder()
+                .id(1L)
+                .tournamentId(10L)
+                .team1Id(100L)
+                .team2Id(200L)
+                .build();
+
+        when(matchRepository.existsById(1L)).thenReturn(true);
+        when(tournamentRepository.findById(10L)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> matchService.update(request));
+    }
+
+    @Test
+    void update_ShouldThrow_WhenTeam1NotFound() {
+        SaveMatchRequest request = SaveMatchRequest.builder()
+                .id(1L)
+                .tournamentId(10L)
+                .team1Id(100L)
+                .team2Id(200L)
+                .build();
+
+        when(matchRepository.existsById(1L)).thenReturn(true);
+        when(tournamentRepository.findById(10L)).thenReturn(Optional.of(tournament));
+        when(teamRepository.findById(100L)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> matchService.update(request));
+    }
+
+    @Test
+    void update_ShouldThrow_WhenTeam2NotFound() {
+        SaveMatchRequest request = SaveMatchRequest.builder()
+                .id(1L)
+                .tournamentId(10L)
+                .team1Id(100L)
+                .team2Id(200L)
+                .build();
+
+        when(matchRepository.existsById(1L)).thenReturn(true);
+        when(tournamentRepository.findById(10L)).thenReturn(Optional.of(tournament));
+        when(teamRepository.findById(100L)).thenReturn(Optional.of(team1));
+        when(teamRepository.findById(200L)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> matchService.update(request));
     }
 }

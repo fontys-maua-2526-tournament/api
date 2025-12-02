@@ -1,9 +1,16 @@
 package edu.fontysmaua.tournamentapi.service.impl;
 
+import edu.fontysmaua.tournamentapi.domain.request.SaveMatchRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllMatchesResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllUpcomingMatchesResponse;
+import edu.fontysmaua.tournamentapi.domain.response.SavedMatchResponse;
 import edu.fontysmaua.tournamentapi.mapper.MatchMapper;
 import edu.fontysmaua.tournamentapi.persistence.MatchRepository;
+import edu.fontysmaua.tournamentapi.persistence.TeamRepository;
+import edu.fontysmaua.tournamentapi.persistence.TournamentRepository;
+import edu.fontysmaua.tournamentapi.persistence.entity.MatchEntity;
+import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
+import edu.fontysmaua.tournamentapi.persistence.entity.TournamentEntity;
 import edu.fontysmaua.tournamentapi.service.MatchService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,6 +21,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class MatchServiceImpl implements MatchService {
     private final MatchRepository matchRepository;
+    private final TournamentRepository tournamentRepository;
+    private final TeamRepository teamRepository;
     private final MatchMapper matchMapper;
 
     @Override
@@ -24,5 +33,29 @@ public class MatchServiceImpl implements MatchService {
     @Override
     public GetAllUpcomingMatchesResponse findAllUpcoming() {
         return new GetAllUpcomingMatchesResponse(matchMapper.entitiesToModels(matchRepository.findAllByTournamentStartTime(LocalDateTime.now())));
+    }
+
+    @Override
+    public SavedMatchResponse create(SaveMatchRequest request) {
+        TournamentEntity tournament = tournamentRepository.findById(request.getTournamentId())
+            .orElseThrow(() -> new RuntimeException("Tournament not found"));
+
+        TeamEntity team1 = teamRepository.findById(request.getTeam1Id())
+            .orElseThrow(() -> new RuntimeException("Team 1 not found"));
+
+        TeamEntity team2 = teamRepository.findById(request.getTeam2Id())
+            .orElseThrow(() -> new RuntimeException("Team 2 not found"));
+
+        MatchEntity savedMatch = matchRepository.save(
+            MatchEntity.builder()
+                .tournament(tournament)
+                .round(request.getRound())
+                .team1(team1)
+                .team2(team2)
+                .team1Score(request.getTeam1Score())
+                .team2Score(request.getTeam2Score())
+                .build()
+        );
+        return new SavedMatchResponse(matchMapper.entityToModel(savedMatch));
     }
 }

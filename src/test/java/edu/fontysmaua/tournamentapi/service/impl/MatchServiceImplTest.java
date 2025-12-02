@@ -1,14 +1,22 @@
 package edu.fontysmaua.tournamentapi.service.impl;
 
 import edu.fontysmaua.tournamentapi.domain.Match;
+import edu.fontysmaua.tournamentapi.domain.request.SaveMatchRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllMatchesResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllUpcomingMatchesResponse;
+import edu.fontysmaua.tournamentapi.domain.response.SavedMatchResponse;
 import edu.fontysmaua.tournamentapi.mapper.MatchMapper;
 import edu.fontysmaua.tournamentapi.persistence.MatchRepository;
+import edu.fontysmaua.tournamentapi.persistence.TeamRepository;
+import edu.fontysmaua.tournamentapi.persistence.TournamentRepository;
 import edu.fontysmaua.tournamentapi.persistence.entity.MatchEntity;
+import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
+import edu.fontysmaua.tournamentapi.persistence.entity.TournamentEntity;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -26,14 +34,27 @@ class MatchServiceImplTest {
 
     @Mock
     private MatchRepository matchRepository;
+
     @Mock
     private MatchMapper matchMapper;
+
+    @Mock
+    private TournamentRepository tournamentRepository;
+
+    @Mock
+    private TeamRepository teamRepository;
 
     @InjectMocks
     private MatchServiceImpl matchService;
 
     private MatchEntity matchEntity;
     private Match match;
+
+    private TournamentEntity tournament;
+    private TeamEntity team1;
+    private TeamEntity team2;
+
+    private SaveMatchRequest saveMatchRequest;
 
     @BeforeEach
     void setUp() {
@@ -48,6 +69,24 @@ class MatchServiceImplTest {
         match.setRound(matchEntity.getRound());
         match.setTeam1Score(matchEntity.getTeam1Score());
         match.setTeam2Score(matchEntity.getTeam2Score());
+        
+        tournament = new TournamentEntity();
+        tournament.setId(10L);
+
+        team1 = new TeamEntity();
+        team1.setId(100L);
+        
+        team2 = new TeamEntity();
+        team2.setId(200L);
+
+        saveMatchRequest = SaveMatchRequest.builder()
+            .round(1)
+            .tournamentId(10L)
+            .team1Id(100L)
+            .team2Id(200L)
+            .team1Score(2)
+            .team2Score(1)
+            .build();
     }
 
     // --- findAll() tests ---
@@ -137,5 +176,85 @@ class MatchServiceImplTest {
             verify(matchRepository, times(1)).findAllByTournamentStartTime(fixedTime);
             verify(matchMapper, times(1)).entitiesToModels(anyList());
         }
+    }
+
+    // ==================== create() Tests ====================
+
+    /* --- SUCCESS CASE --- */
+    @Test
+    void create_ShouldCreateMatch_WhenDataIsValid() {
+        MatchEntity savedEntity = new MatchEntity();
+        savedEntity.setId(1L);
+        savedEntity.setRound(1);
+        savedEntity.setTournament(tournament);
+        savedEntity.setTeam1(team1);
+        savedEntity.setTeam2(team2);
+        savedEntity.setTeam1Score(2);
+        savedEntity.setTeam2Score(1);
+
+        Match savedMatch = Match.builder()
+            .id(1L)
+            .round(1)
+            .team1Score(2)
+            .team2Score(1)
+            .build();
+
+        when(tournamentRepository.findById(10L)).thenReturn(java.util.Optional.of(tournament));
+        when(teamRepository.findById(100L)).thenReturn(java.util.Optional.of(team1));
+        when(teamRepository.findById(200L)).thenReturn(java.util.Optional.of(team2));
+        when(matchRepository.save(any(MatchEntity.class))).thenReturn(savedEntity);
+        when(matchMapper.entityToModel(savedEntity)).thenReturn(savedMatch);
+
+        SavedMatchResponse response = matchService.create(saveMatchRequest);
+
+        assertNotNull(response);
+        assertEquals(savedMatch, response.getMatch());
+
+        ArgumentCaptor<MatchEntity> entityCaptor = ArgumentCaptor.forClass(MatchEntity.class);
+        verify(matchRepository).save(entityCaptor.capture());
+        MatchEntity captured = entityCaptor.getValue();
+
+        assertEquals(1, captured.getRound());
+        assertEquals(team1, captured.getTeam1());
+        assertEquals(team2, captured.getTeam2());
+        assertEquals(tournament, captured.getTournament());
+
+        verify(matchMapper).entityToModel(savedEntity);
+    }
+
+    /* --- TOURNAMENT DOES NOT EXIST --- */
+    @Test
+    void create_ShouldThrowException_WhenTournamentDoesNotExist() {
+        when(tournamentRepository.findById(10L)).thenReturn(java.util.Optional.empty());
+
+        assertThrows(RuntimeException.class,
+            () -> matchService.create(saveMatchRequest));
+
+        verify(matchRepository, never()).save(any());
+    }
+
+    /* --- TEAM 1 DOES NOT EXIST --- */
+    @Test
+    void create_ShouldThrowException_WhenTeam1DoesNotExist() {
+        when(tournamentRepository.findById(10L)).thenReturn(java.util.Optional.of(tournament));
+        when(teamRepository.findById(100L)).thenReturn(java.util.Optional.empty());
+
+        assertThrows(RuntimeException.class,
+            () -> matchService.create(saveMatchRequest));
+
+        verify(matchRepository, never()).save(any());
+    }
+
+    /* --- TEAM 2 DOES NOT EXIST --- */
+    @Test
+    void create_ShouldThrowException_WhenTeam2DoesNotExist() {
+        when(tournamentRepository.findById(10L)).thenReturn(java.util.Optional.of(tournament));
+        when(teamRepository.findById(100L)).thenReturn(java.util.Optional.of(team1));
+        when(teamRepository.findById(200L)).thenReturn(java.util.Optional.empty());
+
+        assertThrows(RuntimeException.class,
+            () -> matchService.create(saveMatchRequest));
+
+        verify(matchRepository, never()).save(any());
     }
 }

@@ -1,5 +1,6 @@
 package edu.fontysmaua.tournamentapi.persistence.entity;
 
+import edu.fontysmaua.tournamentapi.enums.Status;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,4 +29,8 @@ public class MatchEntity {
 
     private Integer team1Score;
     private Integer team2Score;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name ="status")
+    private Status status;
 }

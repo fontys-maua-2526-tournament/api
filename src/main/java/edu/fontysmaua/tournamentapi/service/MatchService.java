@@ -7,4 +7,6 @@ public interface MatchService {
     GetAllMatchesResponse findAll();
 
     GetAllUpcomingMatchesResponse findAllUpcoming();
+
+    Long cancelMatch(Long matchId);
 }

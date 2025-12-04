@@ -1,5 +1,6 @@
 package edu.fontysmaua.tournamentapi.domain;
 
+import edu.fontysmaua.tournamentapi.enums.Status;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,4 +20,6 @@ public class Match {
 
     private Integer team1Score;
     private Integer team2Score;
+
+    private Status status;
 }

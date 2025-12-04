@@ -3,6 +3,7 @@ package edu.fontysmaua.tournamentapi.service.impl;
 import edu.fontysmaua.tournamentapi.domain.Match;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllMatchesResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllUpcomingMatchesResponse;
+import edu.fontysmaua.tournamentapi.enums.Status;
 import edu.fontysmaua.tournamentapi.mapper.MatchMapper;
 import edu.fontysmaua.tournamentapi.persistence.MatchRepository;
 import edu.fontysmaua.tournamentapi.persistence.entity.MatchEntity;
@@ -17,8 +18,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,12 +46,14 @@ class MatchServiceImplTest {
         matchEntity.setRound(1);
         matchEntity.setTeam1Score(2);
         matchEntity.setTeam2Score(1);
+        matchEntity.setStatus(Status.SCHEDULED);
 
         match = new Match();
         match.setId(matchEntity.getId());
         match.setRound(matchEntity.getRound());
         match.setTeam1Score(matchEntity.getTeam1Score());
         match.setTeam2Score(matchEntity.getTeam2Score());
+        match.setStatus(matchEntity.getStatus());
     }
 
     // --- findAll() tests ---
@@ -137,5 +143,108 @@ class MatchServiceImplTest {
             verify(matchRepository, times(1)).findAllByTournamentStartTime(fixedTime);
             verify(matchMapper, times(1)).entitiesToModels(anyList());
         }
+    }
+
+    // --- cancelMatch() tests ---
+
+    @Test
+    void cancelMatch_ShouldCancelSuccessfully_WhenMatchIsScheduled() {
+        // Arrange
+        Long matchId = 1L;
+        matchEntity.setStatus(Status.SCHEDULED);
+        matchEntity.setTeam1Score(0);
+        matchEntity.setTeam2Score(0);
+        
+        when(matchRepository.findById(matchId)).thenReturn(Optional.of(matchEntity));
+        when(matchRepository.save(any(MatchEntity.class))).thenReturn(matchEntity);
+
+        // Act
+        Long cancelledMatchId = matchService.cancelMatch(matchId);
+
+        // Assert
+        assertEquals(matchId, cancelledMatchId);
+        assertEquals(Status.CANCELLED, matchEntity.getStatus());
+        
+        verify(matchRepository, times(1)).findById(matchId);
+        verify(matchRepository, times(1)).save(matchEntity);
+    }
+
+    @Test
+    void cancelMatch_ShouldCancelSuccessfully_WhenMatchIsPending() {
+        // Arrange
+        Long matchId = 1L;
+        matchEntity.setStatus(Status.PENDING);
+        matchEntity.setTeam1Score(0);
+        matchEntity.setTeam2Score(0);
+        
+        when(matchRepository.findById(matchId)).thenReturn(Optional.of(matchEntity));
+        when(matchRepository.save(any(MatchEntity.class))).thenReturn(matchEntity);
+
+        // Act
+        Long cancelledMatchId = matchService.cancelMatch(matchId);
+
+        // Assert
+        assertEquals(matchId, cancelledMatchId);
+        assertEquals(Status.CANCELLED, matchEntity.getStatus());
+        
+        verify(matchRepository, times(1)).findById(matchId);
+        verify(matchRepository, times(1)).save(matchEntity);
+    }
+
+    @Test
+    void cancelMatch_ShouldThrowException_WhenMatchNotFound() {
+        // Arrange
+        Long matchId = 999L;
+        
+        when(matchRepository.findById(matchId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> matchService.cancelMatch(matchId));
+        
+        assertEquals("Match not found", exception.getMessage());
+        
+        verify(matchRepository, times(1)).findById(matchId);
+        verify(matchRepository, never()).save(any());
+    }
+
+    @Test
+    void cancelMatch_ShouldThrowException_WhenMatchIsAlreadyCancelled() {
+        // Arrange
+        Long matchId = 1L;
+        matchEntity.setStatus(Status.CANCELLED);
+        matchEntity.setTeam1Score(-1);
+        matchEntity.setTeam2Score(-1);
+        
+        when(matchRepository.findById(matchId)).thenReturn(Optional.of(matchEntity));
+
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> matchService.cancelMatch(matchId));
+        
+        assertEquals("Match is already cancelled!", exception.getMessage());
+        
+        verify(matchRepository, times(1)).findById(matchId);
+        verify(matchRepository, never()).save(any());
+    }
+
+    @Test
+    void cancelMatch_ShouldThrowException_WhenMatchIsCompleted() {
+        // Arrange
+        Long matchId = 1L;
+        matchEntity.setStatus(Status.COMPLETED);
+        matchEntity.setTeam1Score(2);
+        matchEntity.setTeam2Score(1);
+        
+        when(matchRepository.findById(matchId)).thenReturn(Optional.of(matchEntity));
+
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> matchService.cancelMatch(matchId));
+        
+        assertEquals("Cannot cancel a match with scores already set", exception.getMessage());
+        
+        verify(matchRepository, times(1)).findById(matchId);
+        verify(matchRepository, never()).save(any());
     }
 }

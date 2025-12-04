@@ -31,7 +31,7 @@ public class MatchServiceImpl implements MatchService {
     public Long cancelMatch(Long matchId) {
         var match = matchRepository.findById(matchId).orElseThrow(() -> new RuntimeException("Match not found"));
 
-        if (match.getTeam1Score() == -1 && match.getTeam2Score() == -1){
+        if (match.getStatus() ==  Status.CANCELLED){
             throw new RuntimeException("Match is already cancelled!");
         }
 

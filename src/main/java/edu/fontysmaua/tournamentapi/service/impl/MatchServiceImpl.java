@@ -124,4 +124,5 @@ public class MatchServiceImpl implements MatchService {
         match.setStatus(Status.CANCELLED);
         matchRepository.save(match);
         return matchId;
+    }
 }

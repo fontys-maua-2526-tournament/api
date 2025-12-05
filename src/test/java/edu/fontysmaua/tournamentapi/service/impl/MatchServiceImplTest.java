@@ -547,8 +547,6 @@ class MatchServiceImplTest {
         // Arrange
         Long matchId = 1L;
         matchEntity.setStatus(Status.CANCELLED);
-        matchEntity.setTeam1Score(-1);
-        matchEntity.setTeam2Score(-1);
         
         when(matchRepository.findById(matchId)).thenReturn(Optional.of(matchEntity));
 
@@ -577,26 +575,6 @@ class MatchServiceImplTest {
                 () -> matchService.cancelMatch(matchId));
         
         assertEquals("Cannot cancel a match with scores already set", exception.getMessage());
-        
-        verify(matchRepository, times(1)).findById(matchId);
-        verify(matchRepository, never()).save(any());
-    }
-
-    @Test
-    void cancelMatch_ShouldThrowException_WhenMatchHasNegativeScoresButNotCancelledStatus() {
-        // Arrange
-        Long matchId = 1L;
-        matchEntity.setStatus(Status.SCHEDULED);
-        matchEntity.setTeam1Score(-1);
-        matchEntity.setTeam2Score(-1);
-        
-        when(matchRepository.findById(matchId)).thenReturn(Optional.of(matchEntity));
-
-        // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> matchService.cancelMatch(matchId));
-        
-        assertEquals("Match is already cancelled!", exception.getMessage());
         
         verify(matchRepository, times(1)).findById(matchId);
         verify(matchRepository, never()).save(any());

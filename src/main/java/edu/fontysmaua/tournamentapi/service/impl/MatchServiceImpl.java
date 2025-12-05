@@ -4,6 +4,7 @@ import edu.fontysmaua.tournamentapi.domain.request.SaveMatchRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllMatchesResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetMatchByIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllUpcomingMatchesResponse;
+import edu.fontysmaua.tournamentapi.enums.Status;
 import edu.fontysmaua.tournamentapi.domain.response.SavedMatchResponse;
 import edu.fontysmaua.tournamentapi.mapper.MatchMapper;
 import edu.fontysmaua.tournamentapi.persistence.MatchRepository;
@@ -106,5 +107,22 @@ public class MatchServiceImpl implements MatchService {
         MatchEntity updated = matchRepository.save(entity);
 
         return new SavedMatchResponse(matchMapper.entityToModel(updated));
+    }
+
+    @Override 
+    public Long cancelMatch(Long matchId) {
+        var match = matchRepository.findById(matchId).orElseThrow(() -> new RuntimeException("Match not found"));
+
+        if (match.getStatus() ==  Status.CANCELLED){
+            throw new RuntimeException("Match is already cancelled!");
+        }
+
+        if(match.getStatus() == Status.COMPLETED) {
+            throw new RuntimeException("Cannot cancel a match with scores already set");
+        }
+
+        match.setStatus(Status.CANCELLED);
+        matchRepository.save(match);
+        return matchId;
     }
 }

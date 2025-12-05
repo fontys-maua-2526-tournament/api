@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,7 +38,7 @@ public class MatchController {
     public ResponseEntity<GetAllUpcomingMatchesResponse> findAllUpcoming() {
         return ResponseEntity.ok(matchService.findAllUpcoming());
     }
-
+  
     @GetMapping("/{id}")
     public ResponseEntity<GetMatchByIdResponse> getById(@PathVariable @Positive Long id) {
         return ResponseEntity.ok(matchService.findById(id));
@@ -58,5 +59,10 @@ public class MatchController {
         }
 
         return ResponseEntity.ok(matchService.update(request));
+    }
+
+    @GetMapping("/cancel/{id}")
+    public ResponseEntity<Long> cancel (@PathVariable @Positive Long id){
+        return ResponseEntity.ok(matchService.cancelMatch(id));
     }
 }

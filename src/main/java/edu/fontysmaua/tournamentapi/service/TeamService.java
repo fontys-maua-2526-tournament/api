@@ -2,6 +2,7 @@ package edu.fontysmaua.tournamentapi.service;
 
 import edu.fontysmaua.tournamentapi.domain.request.SaveTeamRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllTeamsResponse;
+import edu.fontysmaua.tournamentapi.domain.response.GetTeamsByUserIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedTeamResponse;
 
 public interface TeamService {
@@ -12,4 +13,6 @@ public interface TeamService {
     SavedTeamResponse update(SaveTeamRequest request);
 
     Long delete(Long teamId);
+
+    GetTeamsByUserIdResponse AddUserToTeam(Long userId, String inviteCode);
 }

@@ -1,12 +1,19 @@
 package edu.fontysmaua.tournamentapi.persistence.entity;
 
+import edu.fontysmaua.tournamentapi.enums.Status;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class MatchEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,4 +35,8 @@ public class MatchEntity {
 
     private Integer team1Score;
     private Integer team2Score;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name ="status")
+    private Status status;
 }

@@ -1,5 +1,7 @@
 package edu.fontysmaua.tournamentapi.controller;
 
+import edu.fontysmaua.tournamentapi.domain.request.AddTeamToTournament;
+import edu.fontysmaua.tournamentapi.domain.request.RemoveTeamFromTournamentRequest;
 import edu.fontysmaua.tournamentapi.domain.request.SaveTournamentRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllTournamentsResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetTournamentByIdResponse;
@@ -7,6 +9,8 @@ import edu.fontysmaua.tournamentapi.domain.response.GetTournamentsByUserIdRespon
 import edu.fontysmaua.tournamentapi.domain.response.SavedTournamentResponse;
 import edu.fontysmaua.tournamentapi.service.TournamentService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,13 +53,34 @@ public class TournamentController {
         return ResponseEntity.ok(tournamentService.update(request));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Long> delete(@PathVariable @Positive Long id) {
-        return ResponseEntity.ok(tournamentService.delete(id));
+    @PostMapping("{tournamentId}/register/{teamId}")
+    public ResponseEntity<String> registerTeam(
+            @PathVariable @NotNull @Positive Long teamId,
+            @PathVariable @NotNull @NotBlank Long tournamentId
+    ) {
+        if(tournamentService.addTeam(new AddTeamToTournament(teamId, tournamentId))) {
+            return ResponseEntity.ok("Team registered successfully");
+        }
+        else {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
-    @PutMapping("/cancel/{id}")
-    public ResponseEntity<Long> cancel(@PathVariable @Positive Long id) {
+    @PostMapping("{tournamentId}/withdraw/{teamId}")
+    public ResponseEntity<String> withdrawTeam(
+            @PathVariable @NotNull @Positive Long teamId,
+            @PathVariable @NotNull @NotBlank Long tournamentId
+    ) {
+        if(tournamentService.removeTeam(new RemoveTeamFromTournamentRequest(teamId, tournamentId))) {
+            return ResponseEntity.ok("Team withdrawn successfully");
+        }
+        else {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Long> delete(@PathVariable @NotNull @Positive Long id) {
         return ResponseEntity.ok(tournamentService.cancel(id));
     }
 }

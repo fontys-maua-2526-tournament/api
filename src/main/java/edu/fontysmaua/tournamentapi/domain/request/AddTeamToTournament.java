@@ -1,8 +1,7 @@
 package edu.fontysmaua.tournamentapi.domain.request;
 
-import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,11 +9,11 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginRequest {
-    @Email
+public class AddTeamToTournament {
     @NotBlank
-    private String email;
+    @Min(1)
+    private Long teamId;
     @NotBlank
-    @Size(min=2, max=30)
-    private String password;
+    @Min(1)
+    private Long tournamentId;
 }

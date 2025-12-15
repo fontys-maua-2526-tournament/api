@@ -1,22 +1,25 @@
 package edu.fontysmaua.tournamentapi.service.impl;
 
+import edu.fontysmaua.tournamentapi.domain.request.AddTeamToTournament;
+import edu.fontysmaua.tournamentapi.domain.request.RemoveTeamFromTournamentRequest;
 import edu.fontysmaua.tournamentapi.domain.request.SaveTournamentRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllTournamentsResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetTournamentByIdResponse;
+import edu.fontysmaua.tournamentapi.domain.response.GetTournamentsByUserIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedTournamentResponse;
 import edu.fontysmaua.tournamentapi.enums.Status;
 import edu.fontysmaua.tournamentapi.exception.NameAlreadyExistsException;
+import edu.fontysmaua.tournamentapi.mapper.TeamMapper;
 import edu.fontysmaua.tournamentapi.mapper.TournamentMapper;
+import edu.fontysmaua.tournamentapi.persistence.TeamRepository;
 import edu.fontysmaua.tournamentapi.persistence.TournamentRepository;
 import edu.fontysmaua.tournamentapi.persistence.entity.TournamentEntity;
 import edu.fontysmaua.tournamentapi.service.TournamentService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.UUID.randomUUID;
@@ -26,6 +29,9 @@ import static java.util.UUID.randomUUID;
 public class TournamentServiceImpl implements TournamentService {
     private final TournamentRepository tournamentRepository;
     private final TournamentMapper tournamentMapper;
+
+    private final TeamRepository teamRepository;
+    private final TeamMapper teamMapper;
 
     @Override
     public GetAllTournamentsResponse findAll() {
@@ -48,6 +54,11 @@ public class TournamentServiceImpl implements TournamentService {
                 .orElseThrow(() -> new EntityNotFoundException("Tournament not found"));
 
         return new GetTournamentByIdResponse(tournamentMapper.entityToModel(entity));
+    }
+
+    @Override
+    public GetTournamentsByUserIdResponse getByUserId(Long userId) {
+        return new GetTournamentsByUserIdResponse(tournamentMapper.entitiesToModels(tournamentRepository.findAllByTeamsUsersId(userId)));
     }
 
     @Override
@@ -107,19 +118,29 @@ public class TournamentServiceImpl implements TournamentService {
     }
 
     @Override
-    public Long delete(Long tournamentId) {
-        if (tournamentId == null) {
-            throw new IllegalArgumentException("ID cannot be null.");
+    public Boolean addTeam(AddTeamToTournament request) {
+        if (!teamRepository.existsById(request.getTeamId())) {
+            throw new IllegalArgumentException("Team not found");
         }
-        if (tournamentId <= 0) {
-            throw new IllegalArgumentException("ID must be greater than 0.");
-        }
-        if (!tournamentRepository.existsById(tournamentId)) {
-            throw new EntityNotFoundException("Tournament doesn't exist in the database");
+        if (!tournamentRepository.existsById(request.getTournamentId())) {
+            throw new IllegalArgumentException("Tournament not found");
         }
 
-        tournamentRepository.deleteById(tournamentId);
-        return tournamentId;
+        System.out.printf("Team %d registered in tournament %d%n", request.getTeamId(), request.getTournamentId());
+        return false;
+    }
+
+    @Override
+    public Boolean removeTeam(RemoveTeamFromTournamentRequest request) {
+        if (!teamRepository.existsById(request.getTeamId())) {
+            throw new IllegalArgumentException("Team not found");
+        }
+        if (!tournamentRepository.existsById(request.getTournamentId())) {
+            throw new IllegalArgumentException("Tournament not found");
+        }
+        System.out.printf("Team %d withdrawn from tournament %d%n", request.getTeamId(), request.getTournamentId());
+
+        return false;
     }
 
     public Long cancel(Long tournamentId) {

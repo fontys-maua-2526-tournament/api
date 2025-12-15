@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "tournament")
@@ -40,4 +42,13 @@ public class TournamentEntity {
     @NotNull
     @Column(name = "end_time")
     private LocalDateTime endTime;
+
+    @ManyToMany
+    @JoinTable(
+            name = "tournament_teams",
+            joinColumns = @JoinColumn(name = "tournament_id"),
+            inverseJoinColumns = @JoinColumn(name = "team_id")
+    )
+    @Builder.Default
+    private List<TeamEntity> teams = new ArrayList<>();
 }

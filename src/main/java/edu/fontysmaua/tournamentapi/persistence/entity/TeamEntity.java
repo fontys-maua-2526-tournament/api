@@ -8,6 +8,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 @Entity
 @Table(name = "team")
 @Data
@@ -24,4 +28,27 @@ public class TeamEntity {
     @Length(min = 2, max = 50)
     @Column(name = "name")
     private String name;
+
+    @Column(name = "invite_code", unique = true)
+    private String inviteCode;
+
+    @ManyToOne
+    @JoinColumn(name = "coach_id")
+    private UserEntity coach;
+
+    @ManyToMany
+    @JoinTable(
+            name = "team_members",
+            joinColumns = @JoinColumn(name = "team_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    @Builder.Default
+    private List<UserEntity> members = new ArrayList<>();
+
+    @PrePersist
+    public void generateInviteCode() {
+        if (this.inviteCode == null) {
+            this.inviteCode = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        }
+    }
 }

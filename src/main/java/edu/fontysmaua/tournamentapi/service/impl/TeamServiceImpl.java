@@ -86,7 +86,7 @@ public class TeamServiceImpl implements TeamService {
         GetTeamsByUserIdResponse dto = new GetTeamsByUserIdResponse();
 
         dto.setTeams(teamMapper.entitiesToModels(userTeams));
-        dto.setUser(userMapper.entityToModel(userEntity));
+        dto.setUser(userMapper.entityToUser(userEntity));
         return dto;
     }
 }

@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -26,4 +27,7 @@ public class Tournament {
     private LocalDateTime endTime;
     private Status status;
     private String invite;
+    private List<Team> teams;
+    private List<Match> matches;
+    private User organizer;
 }

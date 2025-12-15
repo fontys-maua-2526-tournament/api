@@ -1,5 +1,6 @@
 package edu.fontysmaua.tournamentapi.controller;
 
+import edu.fontysmaua.tournamentapi.domain.request.CreateMatchRequest;
 import edu.fontysmaua.tournamentapi.domain.request.SaveMatchRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllMatchesResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllUpcomingMatchesResponse;
@@ -45,7 +46,7 @@ public class MatchController {
     }
 
     @PostMapping
-    public ResponseEntity<SavedMatchResponse> create(@RequestBody @Valid SaveMatchRequest request) {
+    public ResponseEntity<SavedMatchResponse> create(@RequestBody @Valid CreateMatchRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(matchService.create(request));
     }
 

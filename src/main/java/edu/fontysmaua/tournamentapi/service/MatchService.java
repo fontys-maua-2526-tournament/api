@@ -1,5 +1,6 @@
 package edu.fontysmaua.tournamentapi.service;
 
+import edu.fontysmaua.tournamentapi.domain.request.CreateMatchRequest;
 import edu.fontysmaua.tournamentapi.domain.request.SaveMatchRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllMatchesResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetMatchByIdResponse;
@@ -13,7 +14,7 @@ public interface MatchService {
 
     GetAllUpcomingMatchesResponse findAllUpcoming();
 
-    SavedMatchResponse create(SaveMatchRequest request);
+    SavedMatchResponse create(CreateMatchRequest request);
 
     SavedMatchResponse update(SaveMatchRequest request);
   

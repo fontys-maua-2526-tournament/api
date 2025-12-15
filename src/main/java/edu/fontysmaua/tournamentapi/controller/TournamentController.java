@@ -5,6 +5,7 @@ import edu.fontysmaua.tournamentapi.domain.response.GetAllTournamentsResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetTournamentByIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetTournamentsByUserIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedTournamentResponse;
+import edu.fontysmaua.tournamentapi.service.BracketService;
 import edu.fontysmaua.tournamentapi.service.TournamentService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin(origins = {"http://localhost:5173"})
 public class TournamentController {
     private final TournamentService tournamentService;
+    private final BracketService bracketService;
 
     @GetMapping
     public ResponseEntity<GetAllTournamentsResponse> findAll() {
@@ -57,5 +59,10 @@ public class TournamentController {
     @PutMapping("/cancel/{id}")
     public ResponseEntity<Long> cancel(@PathVariable @Positive Long id) {
         return ResponseEntity.ok(tournamentService.cancel(id));
+    }
+
+    @PostMapping("/{id}/bracket/auto")
+    public ResponseEntity<Boolean> createAutoBracket(@PathVariable @Positive Long id) {
+        return ResponseEntity.ok(bracketService.createAutoBracket(id));
     }
 }

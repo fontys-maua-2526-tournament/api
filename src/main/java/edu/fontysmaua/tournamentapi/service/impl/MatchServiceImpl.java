@@ -1,5 +1,6 @@
 package edu.fontysmaua.tournamentapi.service.impl;
 
+import edu.fontysmaua.tournamentapi.domain.request.CreateMatchRequest;
 import edu.fontysmaua.tournamentapi.domain.request.SaveMatchRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllMatchesResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetMatchByIdResponse;
@@ -54,22 +55,36 @@ public class MatchServiceImpl implements MatchService {
     }
 
     @Override
-    public SavedMatchResponse create(SaveMatchRequest request) {
+    public SavedMatchResponse create(CreateMatchRequest request) {
         TournamentEntity tournament = tournamentRepository.findById(request.getTournamentId())
             .orElseThrow(() -> new RuntimeException("Tournament not found"));
 
-        TeamEntity team1 = teamRepository.findById(request.getTeam1Id())
-            .orElseThrow(() -> new RuntimeException("Team 1 not found"));
+        TeamEntity team1 = null;
+        TeamEntity team2 = null;
+        MatchEntity match1 = null;
+        MatchEntity match2 = null;
+        if (request.getTeam1Id() != null && request.getTeam2Id() != null) {
+            team1 = teamRepository.findById(request.getTeam1Id())
+                    .orElseThrow(() -> new RuntimeException("Team 1 not found"));
 
-        TeamEntity team2 = teamRepository.findById(request.getTeam2Id())
-            .orElseThrow(() -> new RuntimeException("Team 2 not found"));
+            team2 = teamRepository.findById(request.getTeam2Id())
+                    .orElseThrow(() -> new RuntimeException("Team 2 not found"));
+        }
+        else {
+            match1 = matchRepository.findById(request.getMatch1Id())
+                    .orElseThrow(() -> new RuntimeException("Match 1 not found"));
 
+            match2 = matchRepository.findById(request.getMatch2Id())
+                    .orElseThrow(() -> new RuntimeException("Match 2 not found"));
+        }
         MatchEntity savedMatch = matchRepository.save(
             MatchEntity.builder()
                 .tournament(tournament)
                 .round(request.getRound())
                 .team1(team1)
                 .team2(team2)
+                .match1(match1)
+                .match2(match2)
                 .team1Score(request.getTeam1Score())
                 .team2Score(request.getTeam2Score())
                 .build()

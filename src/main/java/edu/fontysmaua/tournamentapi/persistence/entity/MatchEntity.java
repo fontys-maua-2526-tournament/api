@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "match")
 public class MatchEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,10 +34,21 @@ public class MatchEntity {
     @JoinColumn(name = "team2_id")
     private TeamEntity team2;
 
+    @ManyToOne
+    @JoinColumn(name = "match1_id")
+    private MatchEntity match1;
+
+    @ManyToOne
+    @JoinColumn(name = "match2_id")
+    private MatchEntity match2;
+
+    @Column(name ="team1_score")
     private Integer team1Score;
+
+    @Column(name ="team2_score")
     private Integer team2Score;
     
     @Enumerated(EnumType.STRING)
-    @Column(name ="status")
+    @Column(name = "status")
     private Status status;
 }

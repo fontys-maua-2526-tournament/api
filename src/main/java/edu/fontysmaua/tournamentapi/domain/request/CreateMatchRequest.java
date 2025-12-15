@@ -1,6 +1,5 @@
-package edu.fontysmaua.tournamentapi.domain;
+package edu.fontysmaua.tournamentapi.domain.request;
 
-import edu.fontysmaua.tournamentapi.enums.Status;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,10 +7,9 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class Match {
-    private Long id;
+@NoArgsConstructor
+public class CreateMatchRequest {
     private Integer round;
 
     private Long tournamentId;
@@ -23,6 +21,4 @@ public class Match {
 
     private Integer team1Score;
     private Integer team2Score;
-
-    private Status status;
 }

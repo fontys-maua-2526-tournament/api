@@ -1,8 +1,8 @@
 package edu.fontysmaua.tournamentapi.controller;
 
-
 import edu.fontysmaua.tournamentapi.domain.request.SaveTeamRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllTeamsResponse;
+import edu.fontysmaua.tournamentapi.domain.response.GetTeamMembersResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetTeamsByUserIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedTeamResponse;
 import edu.fontysmaua.tournamentapi.service.TeamService;
@@ -28,7 +28,8 @@ public class TeamsController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SavedTeamResponse> updateTeam(@PathVariable Long id, @RequestBody SaveTeamRequest request) {
+    public ResponseEntity<SavedTeamResponse> updateTeam(@PathVariable("id") Long id,
+            @RequestBody SaveTeamRequest request) {
         if (!request.getId().equals(id)) {
             return ResponseEntity.badRequest().build();
         }
@@ -41,7 +42,13 @@ public class TeamsController {
     }
 
     @PostMapping("/addToTeam/{userId}/{inviteCode}")
-    public ResponseEntity<GetTeamsByUserIdResponse> addToTeam(@PathVariable Long userId, @PathVariable String inviteCode) {
+    public ResponseEntity<GetTeamsByUserIdResponse> addToTeam(@PathVariable("userId") Long userId,
+            @PathVariable("inviteCode") String inviteCode) {
         return ResponseEntity.ok(teamService.AddUserToTeam(userId, inviteCode));
+    }
+
+    @GetMapping("/{teamId}/members")
+    public ResponseEntity<GetTeamMembersResponse> getTeamMembers(@PathVariable("teamId") @Positive Long teamId) {
+        return ResponseEntity.ok(teamService.getTeamMembers(teamId));
     }
 }

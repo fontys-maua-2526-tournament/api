@@ -1,18 +1,24 @@
 package edu.fontysmaua.tournamentapi.service.impl;
 
 import edu.fontysmaua.tournamentapi.domain.Tournament;
+import edu.fontysmaua.tournamentapi.domain.Match;
 import edu.fontysmaua.tournamentapi.domain.request.SaveTournamentRequest;
 import edu.fontysmaua.tournamentapi.domain.request.AddTeamToTournament;
 import edu.fontysmaua.tournamentapi.domain.request.RemoveTeamFromTournamentRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllTournamentsResponse;
+import edu.fontysmaua.tournamentapi.domain.response.GetMatchesByTournamentRoundResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetTournamentByIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedTournamentResponse;
+import edu.fontysmaua.tournamentapi.domain.response.GetMatchesByTournamentRoundResponse;
 import edu.fontysmaua.tournamentapi.enums.Status;
 import edu.fontysmaua.tournamentapi.exception.NameAlreadyExistsException;
+import edu.fontysmaua.tournamentapi.mapper.MatchMapper;
 import edu.fontysmaua.tournamentapi.mapper.TournamentMapper;
+import edu.fontysmaua.tournamentapi.persistence.MatchRepository;
 import edu.fontysmaua.tournamentapi.persistence.TournamentRepository;
 import edu.fontysmaua.tournamentapi.persistence.TeamRepository;
 import edu.fontysmaua.tournamentapi.persistence.entity.TournamentEntity;
+import edu.fontysmaua.tournamentapi.persistence.entity.MatchEntity;
 import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,6 +37,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,6 +54,11 @@ class TournamentServiceImplTest {
 
     @Mock
     private TeamRepository teamRepository;
+
+    @Mock
+    private MatchRepository matchRepository;
+    @Mock
+    private MatchMapper matchMapper;
 
     private TournamentEntity tournamentEntity;
     private TournamentEntity tournamentEntity2;
@@ -861,5 +873,301 @@ class TournamentServiceImplTest {
         assertFalse(tournamentEntity2.getTeams().contains(teamEntity));
         assertTrue(tournamentEntity2.getTeams().contains(teamEntity2)); // O outro time permanece
         assertEquals(1, tournamentEntity2.getTeams().size());
+    }
+
+    // ==================== getTournamentMatchesByRound() Tests ====================
+
+    @Test
+    void getTournamentMatchesByRound_ShouldReturnMatches_WhenTournamentExistsAndHasMatchesInRound() {
+        // Arrange
+        Long tournamentId = 1L;
+        Integer round = 1;
+        
+        MatchEntity match1 = MatchEntity.builder()
+                .id(1L)
+                .round(1)
+                .team1Score(2)
+                .team2Score(1)
+                .status(Status.SCHEDULED)
+                .tournament(tournamentEntity)
+                .build();
+        
+        MatchEntity match2 = MatchEntity.builder()
+                .id(2L)
+                .round(1)
+                .team1Score(0)
+                .team2Score(0)
+                .status(Status.PENDING)
+                .tournament(tournamentEntity)
+                .build();
+        
+        List<MatchEntity> matchEntities = List.of(match1, match2);
+        
+        Match matchModel1 = Match.builder()
+                .id(1L)
+                .round(1)
+                .team1Score(2)
+                .team2Score(1)
+                .status(Status.SCHEDULED)
+                .build();
+        
+        Match matchModel2 = Match.builder()
+                .id(2L)
+                .round(1)
+                .team1Score(0)
+                .team2Score(0)
+                .status(Status.PENDING)
+                .build();
+        
+        List<Match> matches = List.of(matchModel1, matchModel2);
+        
+        when(tournamentRepository.existsById(tournamentId)).thenReturn(true);
+        when(matchRepository.findByTournamentIdAndRound(tournamentId, round)).thenReturn(matchEntities);
+        when(matchMapper.entitiesToModels(matchEntities)).thenReturn(matches);
+        
+        // Act
+        GetMatchesByTournamentRoundResponse response = 
+                tournamentService.getTournamentMatchesByRound(tournamentId, round);
+        
+        // Assert
+        assertNotNull(response);
+        assertEquals(tournamentId, response.getTournamentId());
+        assertEquals(round, response.getRound());
+        assertEquals(2, response.getMatches().size());
+        assertEquals(matchModel1, response.getMatches().get(0));
+        assertEquals(matchModel2, response.getMatches().get(1));
+        
+        verify(tournamentRepository, times(1)).existsById(tournamentId);
+        verify(matchRepository, times(1)).findByTournamentIdAndRound(tournamentId, round);
+        verify(matchMapper, times(1)).entitiesToModels(matchEntities);
+    }
+
+    @Test
+    void getTournamentMatchesByRound_ShouldReturnEmptyList_WhenNoMatchesInRound() {
+        // Arrange
+        Long tournamentId = 1L;
+        Integer round = 5; // Final, sem partidas ainda
+        
+        when(tournamentRepository.existsById(tournamentId)).thenReturn(true);
+        when(matchRepository.findByTournamentIdAndRound(tournamentId, round)).thenReturn(List.of());
+        when(matchMapper.entitiesToModels(anyList())).thenReturn(List.of());
+        
+        // Act
+        GetMatchesByTournamentRoundResponse response = 
+                tournamentService.getTournamentMatchesByRound(tournamentId, round);
+        
+        // Assert
+        assertNotNull(response);
+        assertEquals(tournamentId, response.getTournamentId());
+        assertEquals(round, response.getRound());
+        assertTrue(response.getMatches().isEmpty());
+        
+        verify(tournamentRepository, times(1)).existsById(tournamentId);
+        verify(matchRepository, times(1)).findByTournamentIdAndRound(tournamentId, round);
+        verify(matchMapper, times(1)).entitiesToModels(anyList());
+    }
+
+    @Test
+    void getTournamentMatchesByRound_ShouldReturnAllMatches_WhenRoundIsNull() {
+        // Arrange
+        Long tournamentId = 1L;
+        
+        MatchEntity match1 = MatchEntity.builder()
+                .id(1L).round(1).tournament(tournamentEntity).build();
+        MatchEntity match2 = MatchEntity.builder()
+                .id(2L).round(2).tournament(tournamentEntity).build();
+        MatchEntity match3 = MatchEntity.builder()
+                .id(3L).round(3).tournament(tournamentEntity).build();
+        
+        List<MatchEntity> allMatches = List.of(match1, match2, match3);
+        
+        List<Match> allMatchModels = List.of(
+                Match.builder().id(1L).round(1).build(),
+                Match.builder().id(2L).round(2).build(),
+                Match.builder().id(3L).round(3).build()
+        );
+        
+        when(tournamentRepository.existsById(tournamentId)).thenReturn(true);
+        when(matchRepository.findByTournamentId(tournamentId)).thenReturn(allMatches);
+        when(matchMapper.entitiesToModels(allMatches)).thenReturn(allMatchModels);
+        
+        // Act
+        GetMatchesByTournamentRoundResponse response = 
+                tournamentService.getTournamentMatchesByRound(tournamentId, null);
+        
+        // Assert
+        assertNotNull(response);
+        assertEquals(tournamentId, response.getTournamentId());
+        assertNull(response.getRound()); // round é null quando busca todas
+        assertEquals(3, response.getMatches().size());
+        
+        verify(tournamentRepository, times(1)).existsById(tournamentId);
+        verify(matchRepository, times(1)).findByTournamentId(tournamentId);
+        verify(matchRepository, never()).findByTournamentIdAndRound(any(), any());
+        verify(matchMapper, times(1)).entitiesToModels(allMatches);
+    }
+
+    @Test
+    void getTournamentMatchesByRound_ShouldThrowException_WhenTournamentNotFound() {
+        // Arrange
+        Long tournamentId = 999L;
+        Integer round = 1;
+        
+        when(tournamentRepository.existsById(tournamentId)).thenReturn(false);
+        
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> tournamentService.getTournamentMatchesByRound(tournamentId, round)
+        );
+        
+        assertEquals("Tournament not found with ID: 999", exception.getMessage());
+        
+        verify(tournamentRepository, times(1)).existsById(tournamentId);
+        verify(matchRepository, never()).findByTournamentIdAndRound(any(), any());
+        verify(matchMapper, never()).entitiesToModels(anyList());
+    }
+
+    @Test
+    void getTournamentMatchesByRound_ShouldThrowException_WhenTournamentIdIsNull() {
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> tournamentService.getTournamentMatchesByRound(null, 1)
+        );
+        
+        assertEquals("Tournament ID must be greater than 0", exception.getMessage());
+        
+        verify(tournamentRepository, never()).existsById(any());
+        verify(matchRepository, never()).findByTournamentIdAndRound(any(), any());
+    }
+
+    @Test
+    void getTournamentMatchesByRound_ShouldThrowException_WhenTournamentIdIsZero() {
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> tournamentService.getTournamentMatchesByRound(0L, 1)
+        );
+        
+        assertEquals("Tournament ID must be greater than 0", exception.getMessage());
+        
+        verify(tournamentRepository, never()).existsById(any());
+        verify(matchRepository, never()).findByTournamentIdAndRound(any(), any());
+    }
+
+    @Test
+    void getTournamentMatchesByRound_ShouldThrowException_WhenTournamentIdIsNegative() {
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> tournamentService.getTournamentMatchesByRound(-1L, 1)
+        );
+        
+        assertEquals("Tournament ID must be greater than 0", exception.getMessage());
+        
+        verify(tournamentRepository, never()).existsById(any());
+        verify(matchRepository, never()).findByTournamentIdAndRound(any(), any());
+    }
+
+    @Test
+    void getTournamentMatchesByRound_ShouldThrowException_WhenRoundIsNegative() {
+        // Arrange
+        Long tournamentId = 1L;
+        Integer round = -1;
+        
+        when(tournamentRepository.existsById(tournamentId)).thenReturn(true);
+        
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> tournamentService.getTournamentMatchesByRound(tournamentId, round)
+        );
+        
+        assertEquals("Round must be a non-negative integer", exception.getMessage());
+        
+        verify(tournamentRepository, times(1)).existsById(tournamentId);
+        verify(matchRepository, never()).findByTournamentIdAndRound(any(), any());
+    }
+
+    @Test
+    void getTournamentMatchesByRound_ShouldReturnMatchesFromSpecificRoundOnly() {
+        // Arrange
+        Long tournamentId = 1L;
+        Integer round = 2;
+        
+        MatchEntity matchRound1 = MatchEntity.builder()
+                .id(1L).round(1).tournament(tournamentEntity).build();
+        MatchEntity matchRound2a = MatchEntity.builder()
+                .id(2L).round(2).tournament(tournamentEntity).build();
+        MatchEntity matchRound2b = MatchEntity.builder()
+                .id(3L).round(2).tournament(tournamentEntity).build();
+        MatchEntity matchRound3 = MatchEntity.builder()
+                .id(4L).round(3).tournament(tournamentEntity).build();
+        
+        List<MatchEntity> round2Matches = List.of(matchRound2a, matchRound2b);
+        
+        List<Match> round2MatchModels = List.of(
+                Match.builder().id(2L).round(2).build(),
+                Match.builder().id(3L).round(2).build()
+        );
+        
+        when(tournamentRepository.existsById(tournamentId)).thenReturn(true);
+        when(matchRepository.findByTournamentIdAndRound(tournamentId, round)).thenReturn(round2Matches);
+        when(matchMapper.entitiesToModels(round2Matches)).thenReturn(round2MatchModels);
+        
+        // Act
+        GetMatchesByTournamentRoundResponse response = 
+                tournamentService.getTournamentMatchesByRound(tournamentId, round);
+        
+        // Assert
+        assertNotNull(response);
+        assertEquals(tournamentId, response.getTournamentId());
+        assertEquals(round, response.getRound());
+        assertEquals(2, response.getMatches().size());
+        
+        assertTrue(response.getMatches().stream().allMatch(m -> m.getRound() == 2));
+        
+        verify(matchRepository, times(1)).findByTournamentIdAndRound(tournamentId, round);
+    }
+
+    @Test
+    void getTournamentMatchesByRound_ShouldHandleMultipleTournamentsCorrectly() {
+        // Arrange
+        Long tournamentId1 = 1L;
+        Long tournamentId2 = 2L;
+        Integer round = 1;
+        
+        TournamentEntity tournament2 = TournamentEntity.builder()
+                .id(2L)
+                .name("Another Tournament")
+                .build();
+        
+        // Partidas do torneio 1
+        MatchEntity match1 = MatchEntity.builder()
+                .id(1L).round(1).tournament(tournamentEntity).build();
+        
+        // Partidas do torneio 2 (não devem ser retornadas)
+        MatchEntity match2 = MatchEntity.builder()
+                .id(2L).round(1).tournament(tournament2).build();
+        
+        List<MatchEntity> tournament1Matches = List.of(match1);
+        List<Match> tournament1MatchModels = List.of(
+                Match.builder().id(1L).round(1).build()
+        );
+        
+        when(tournamentRepository.existsById(tournamentId1)).thenReturn(true);
+        when(matchRepository.findByTournamentIdAndRound(tournamentId1, round)).thenReturn(tournament1Matches);
+        when(matchMapper.entitiesToModels(tournament1Matches)).thenReturn(tournament1MatchModels);
+        
+        // Act
+        GetMatchesByTournamentRoundResponse response = 
+                tournamentService.getTournamentMatchesByRound(tournamentId1, round);
+        
+        // Assert
+        assertNotNull(response);
+        assertEquals(tournamentId1, response.getTournamentId());
+        assertEquals(1, response.getMatches().size());
+        assertEquals(1L, response.getMatches().get(0).getId());
     }
 }

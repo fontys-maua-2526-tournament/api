@@ -1,18 +1,23 @@
 package edu.fontysmaua.tournamentapi.service.impl;
 
+import edu.fontysmaua.tournamentapi.domain.Match;
 import edu.fontysmaua.tournamentapi.domain.request.AddTeamToTournament;
 import edu.fontysmaua.tournamentapi.domain.request.RemoveTeamFromTournamentRequest;
 import edu.fontysmaua.tournamentapi.domain.request.SaveTournamentRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllTournamentsResponse;
+import edu.fontysmaua.tournamentapi.domain.response.GetMatchesByTournamentRoundResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetTournamentByIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetTournamentsByUserIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedTournamentResponse;
 import edu.fontysmaua.tournamentapi.enums.Status;
 import edu.fontysmaua.tournamentapi.exception.NameAlreadyExistsException;
+import edu.fontysmaua.tournamentapi.mapper.MatchMapper;
 import edu.fontysmaua.tournamentapi.mapper.TeamMapper;
 import edu.fontysmaua.tournamentapi.mapper.TournamentMapper;
+import edu.fontysmaua.tournamentapi.persistence.MatchRepository;
 import edu.fontysmaua.tournamentapi.persistence.TeamRepository;
 import edu.fontysmaua.tournamentapi.persistence.TournamentRepository;
+import edu.fontysmaua.tournamentapi.persistence.entity.MatchEntity;
 import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
 import edu.fontysmaua.tournamentapi.persistence.entity.TournamentEntity;
 import edu.fontysmaua.tournamentapi.service.TournamentService;
@@ -34,6 +39,9 @@ public class TournamentServiceImpl implements TournamentService {
 
     private final TeamRepository teamRepository;
     private final TeamMapper teamMapper;
+
+    private final MatchRepository matchRepository;
+    private final MatchMapper matchMapper;
 
     @Override
     public GetAllTournamentsResponse findAll() {
@@ -201,5 +209,32 @@ public class TournamentServiceImpl implements TournamentService {
         tournament.setStatus(Status.CANCELLED);
         tournamentRepository.save(tournament);
         return tournamentId;
+    }
+
+    @Override
+    public GetMatchesByTournamentRoundResponse getTournamentMatchesByRound(Long tournamentId, Integer round) {
+        if (tournamentId == null || tournamentId <= 0) {
+            throw new IllegalArgumentException("Tournament ID must be greater than 0");
+        }
+        
+        if (!tournamentRepository.existsById(tournamentId)) {
+            throw new IllegalArgumentException("Tournament not found with ID: " + tournamentId);
+        }
+        
+        if (round != null && round < 0) {
+            throw new IllegalArgumentException("Round must be a non-negative integer");
+        }
+        
+        List<MatchEntity> matchEntities;
+        
+        if (round != null) {
+            matchEntities = matchRepository.findByTournamentIdAndRound(tournamentId, round);
+        } else {
+            matchEntities = matchRepository.findByTournamentId(tournamentId);
+        }
+        
+        List<Match> matches = matchMapper.entitiesToModels(matchEntities);
+        
+        return new GetMatchesByTournamentRoundResponse(tournamentId, round, matches);
     }
 }

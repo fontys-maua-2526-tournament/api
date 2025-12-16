@@ -2,6 +2,8 @@ package edu.fontysmaua.tournamentapi.service.impl;
 
 import edu.fontysmaua.tournamentapi.domain.Tournament;
 import edu.fontysmaua.tournamentapi.domain.request.SaveTournamentRequest;
+import edu.fontysmaua.tournamentapi.domain.request.AddTeamToTournament;
+import edu.fontysmaua.tournamentapi.domain.request.RemoveTeamFromTournamentRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllTournamentsResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetTournamentByIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedTournamentResponse;
@@ -9,7 +11,9 @@ import edu.fontysmaua.tournamentapi.enums.Status;
 import edu.fontysmaua.tournamentapi.exception.NameAlreadyExistsException;
 import edu.fontysmaua.tournamentapi.mapper.TournamentMapper;
 import edu.fontysmaua.tournamentapi.persistence.TournamentRepository;
+import edu.fontysmaua.tournamentapi.persistence.TeamRepository;
 import edu.fontysmaua.tournamentapi.persistence.entity.TournamentEntity;
+import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,11 +45,17 @@ class TournamentServiceImplTest {
     @InjectMocks
     private TournamentServiceImpl tournamentService;
 
+    @Mock
+    private TeamRepository teamRepository;
+
     private TournamentEntity tournamentEntity;
+    private TournamentEntity tournamentEntity2;
     private Tournament tournament;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-
+    private TeamEntity teamEntity;
+    private TeamEntity teamEntity2;
+    
     @BeforeEach
     void setUp() {
         startTime = LocalDateTime.of(2024, 1, 1, 10, 0);
@@ -58,6 +68,7 @@ class TournamentServiceImplTest {
                 .startTime(startTime)
                 .endTime(endTime)
                 .status(Status.SCHEDULED)
+                .teams(new ArrayList<>())
                 .build();
 
         tournament = Tournament.builder()
@@ -66,6 +77,29 @@ class TournamentServiceImplTest {
                 .address("123 Main St")
                 .startTime(startTime)
                 .endTime(endTime)
+                .build();
+        
+        LocalDateTime futureStartTime = LocalDateTime.now().plusDays(1);
+        tournamentEntity2 = TournamentEntity.builder()
+                .id(2L)
+                .name("Future Championship")
+                .address("456 Future St")
+                .startTime(futureStartTime)
+                .endTime(futureStartTime.plusHours(8))
+                .status(Status.SCHEDULED)
+                .teams(new ArrayList<>())
+                .build();
+
+        teamEntity = TeamEntity.builder()
+                .id(1L)
+                .name("Team Alpha")
+                .tournaments(new ArrayList<>())
+                .build();
+
+        teamEntity2 = TeamEntity.builder()
+                .id(2L)
+                .name("Team Beta")
+                .tournaments(new ArrayList<>())
                 .build();
     }
 
@@ -534,5 +568,298 @@ class TournamentServiceImplTest {
         assertEquals(Status.CANCELLED, tournament.getStatus());
         verify(tournamentRepository, times(1)).findById(tournamentId);
         verify(tournamentRepository, times(1)).save(tournament);
+    }
+
+    // ==================== addTeam() Tests ====================
+
+    @Test
+    void addTeam_ShouldAddTeamSuccessfully_WhenValidRequest() {
+        // Arrange
+        AddTeamToTournament request = new AddTeamToTournament(1L, 1L);
+
+        when(teamRepository.findById(1L)).thenReturn(Optional.of(teamEntity));
+        when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournamentEntity2));
+        when(tournamentRepository.save(any(TournamentEntity.class))).thenReturn(tournamentEntity2);
+        when(teamRepository.save(any(TeamEntity.class))).thenReturn(teamEntity);
+
+        // Act
+        Boolean result = tournamentService.addTeam(request);
+
+        // Assert
+        assertTrue(result);
+        assertTrue(tournamentEntity2.getTeams().contains(teamEntity));
+        assertTrue(teamEntity.getTournaments().contains(tournamentEntity2));
+
+        verify(teamRepository, times(1)).findById(1L);
+        verify(tournamentRepository, times(1)).findById(1L);
+        verify(tournamentRepository, times(1)).save(tournamentEntity2);
+        verify(teamRepository, times(1)).save(teamEntity);
+    }
+
+    @Test
+    void addTeam_ShouldThrowIllegalArgumentException_WhenTeamNotFound() {
+        // Arrange
+        AddTeamToTournament request = new AddTeamToTournament(999L, 1L);
+
+        when(teamRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> tournamentService.addTeam(request)
+        );
+
+        assertEquals("Team not found with ID: 999", exception.getMessage());
+        verify(teamRepository, times(1)).findById(999L);
+        verify(tournamentRepository, never()).findById(any());
+    }
+
+    @Test
+    void addTeam_ShouldThrowIllegalArgumentException_WhenTournamentNotFound() {
+        // Arrange
+        AddTeamToTournament request = new AddTeamToTournament(1L, 999L);
+
+        when(teamRepository.findById(1L)).thenReturn(Optional.of(teamEntity));
+        when(tournamentRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> tournamentService.addTeam(request)
+        );
+
+        assertEquals("Tournament not found with ID: 999", exception.getMessage());
+        verify(teamRepository, times(1)).findById(1L);
+        verify(tournamentRepository, times(1)).findById(999L);
+        verify(tournamentRepository, never()).save(any());
+    }
+
+    @Test
+    void addTeam_ShouldThrowIllegalStateException_WhenTournamentAlreadyStarted() {
+        // Arrange
+        AddTeamToTournament request = new AddTeamToTournament(1L, 1L);
+        
+        TournamentEntity tournamentComDataPassada = TournamentEntity.builder()
+                .id(1L)
+                .name("Torneio Passado")
+                .startTime(LocalDateTime.now().minusHours(1))
+                .teams(new ArrayList<>())
+                .build();
+        
+        when(teamRepository.findById(1L)).thenReturn(Optional.of(teamEntity));
+        when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournamentComDataPassada));
+
+        // Act & Assert
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> tournamentService.addTeam(request)
+        );
+
+        assertEquals("Cannot register team after tournament has started", exception.getMessage());
+        verify(teamRepository, times(1)).findById(1L);
+        verify(tournamentRepository, times(1)).findById(1L);
+        verify(tournamentRepository, never()).save(any());
+    }
+
+    @Test
+    void addTeam_ShouldThrowIllegalStateException_WhenTeamAlreadyRegistered() {
+        // Arrange
+        AddTeamToTournament request = new AddTeamToTournament(1L, 1L);
+
+        tournamentEntity2.getTeams().add(teamEntity);
+        teamEntity.getTournaments().add(tournamentEntity2);
+
+        when(teamRepository.findById(1L)).thenReturn(Optional.of(teamEntity));
+        when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournamentEntity2));
+
+        // Act & Assert
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> tournamentService.addTeam(request)
+        );
+
+        assertTrue(exception.getMessage().contains("is already registered in tournament"));
+        verify(teamRepository, times(1)).findById(1L);
+        verify(tournamentRepository, times(1)).findById(1L);
+        verify(tournamentRepository, never()).save(any());
+    }
+
+    @Test
+    void addTeam_ShouldInitializeListsWhenNull() {
+        // Arrange
+        AddTeamToTournament request = new AddTeamToTournament(1L, 1L);
+
+        tournamentEntity2.setTeams(null);
+        teamEntity.setTournaments(null);
+
+        when(teamRepository.findById(1L)).thenReturn(Optional.of(teamEntity));
+        when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournamentEntity2));
+        when(tournamentRepository.save(any(TournamentEntity.class))).thenReturn(tournamentEntity2);
+        when(teamRepository.save(any(TeamEntity.class))).thenReturn(teamEntity);
+
+        // Act
+        Boolean result = tournamentService.addTeam(request);
+
+        // Assert
+        assertTrue(result);
+        assertNotNull(tournamentEntity2.getTeams());
+        assertNotNull(teamEntity.getTournaments());
+        assertEquals(1, tournamentEntity2.getTeams().size());
+        assertEquals(1, teamEntity.getTournaments().size());
+    }
+
+    // ==================== removeTeam() Tests ====================
+
+    @Test
+    void removeTeam_ShouldRemoveTeamSuccessfully_WhenValidRequest() {
+        // Arrange
+        RemoveTeamFromTournamentRequest request = new RemoveTeamFromTournamentRequest(1L, 2L);
+
+        tournamentEntity2.getTeams().add(teamEntity);
+        teamEntity.getTournaments().add(tournamentEntity2);
+
+        when(teamRepository.findById(1L)).thenReturn(Optional.of(teamEntity));
+        when(tournamentRepository.findById(2L)).thenReturn(Optional.of(tournamentEntity2));
+        when(tournamentRepository.save(any(TournamentEntity.class))).thenReturn(tournamentEntity2);
+        when(teamRepository.save(any(TeamEntity.class))).thenReturn(teamEntity);
+
+        // Act
+        Boolean result = tournamentService.removeTeam(request);
+
+        // Assert
+        assertTrue(result);
+        assertFalse(tournamentEntity2.getTeams().contains(teamEntity));
+        assertFalse(teamEntity.getTournaments().contains(tournamentEntity2));
+
+        verify(teamRepository, times(1)).findById(1L);
+        verify(tournamentRepository, times(1)).findById(2L);
+        verify(tournamentRepository, times(1)).save(tournamentEntity2);
+        verify(teamRepository, times(1)).save(teamEntity);
+    }
+
+    @Test
+    void removeTeam_ShouldThrowIllegalArgumentException_WhenTeamNotFound() {
+        // Arrange
+        RemoveTeamFromTournamentRequest request = new RemoveTeamFromTournamentRequest(999L, 1L);
+
+        when(teamRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> tournamentService.removeTeam(request)
+        );
+
+        assertEquals("Team not found with ID: 999", exception.getMessage());
+        verify(teamRepository, times(1)).findById(999L);
+        verify(tournamentRepository, never()).findById(any());
+    }
+
+    @Test
+    void removeTeam_ShouldThrowIllegalArgumentException_WhenTournamentNotFound() {
+        // Arrange
+        RemoveTeamFromTournamentRequest request = new RemoveTeamFromTournamentRequest(1L, 999L);
+
+        when(teamRepository.findById(1L)).thenReturn(Optional.of(teamEntity));
+        when(tournamentRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> tournamentService.removeTeam(request)
+        );
+
+        assertEquals("Tournament not found with ID: 999", exception.getMessage());
+        verify(teamRepository, times(1)).findById(1L);
+        verify(tournamentRepository, times(1)).findById(999L);
+        verify(tournamentRepository, never()).save(any());
+    }
+
+    @Test
+    void removeTeam_ShouldThrowIllegalStateException_WhenTournamentAlreadyStarted() {
+        // Arrange
+        RemoveTeamFromTournamentRequest request = new RemoveTeamFromTournamentRequest(1L, 1L);
+
+        tournamentEntity2.setStartTime(LocalDateTime.now().minusHours(1));
+        tournamentEntity2.getTeams().add(teamEntity);
+        teamEntity.getTournaments().add(tournamentEntity2);
+
+        when(teamRepository.findById(1L)).thenReturn(Optional.of(teamEntity));
+        when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournamentEntity2));
+
+        // Act & Assert
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> tournamentService.removeTeam(request)
+        );
+
+        assertEquals("Cannot remove team after tournament has started", exception.getMessage());
+        verify(teamRepository, times(1)).findById(1L);
+        verify(tournamentRepository, times(1)).findById(1L);
+        verify(tournamentRepository, never()).save(any());
+    }
+
+    @Test
+    void removeTeam_ShouldThrowIllegalStateException_WhenTeamNotRegistered() {
+        // Arrange
+        RemoveTeamFromTournamentRequest request = new RemoveTeamFromTournamentRequest(1L, 1L);
+
+        when(teamRepository.findById(1L)).thenReturn(Optional.of(teamEntity));
+        when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournamentEntity2));
+
+        // Act & Assert
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> tournamentService.removeTeam(request)
+        );
+
+        assertTrue(exception.getMessage().contains("is not registered in tournament"));
+        verify(teamRepository, times(1)).findById(1L);
+        verify(tournamentRepository, times(1)).findById(1L);
+        verify(tournamentRepository, never()).save(any());
+    }
+
+    @Test
+    void removeTeam_ShouldHandleNullListsGracefully() {
+        // Arrange
+        RemoveTeamFromTournamentRequest request = new RemoveTeamFromTournamentRequest(1L, 1L);
+
+        tournamentEntity2.setTeams(null);
+        teamEntity.setTournaments(null);
+
+        when(teamRepository.findById(1L)).thenReturn(Optional.of(teamEntity));
+        when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournamentEntity2));
+
+        // Act & Assert
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> tournamentService.removeTeam(request)
+        );
+
+        assertTrue(exception.getMessage().contains("is not registered in tournament"));
+    }
+
+    @Test
+    void removeTeam_ShouldRemoveFromMultipleTeams() {
+        // Arrange
+        RemoveTeamFromTournamentRequest request = new RemoveTeamFromTournamentRequest(1L, 1L);
+
+        tournamentEntity2.getTeams().add(teamEntity);
+        tournamentEntity2.getTeams().add(teamEntity2);
+        teamEntity.getTournaments().add(tournamentEntity2);
+
+        when(teamRepository.findById(1L)).thenReturn(Optional.of(teamEntity));
+        when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournamentEntity2));
+        when(tournamentRepository.save(any(TournamentEntity.class))).thenReturn(tournamentEntity2);
+        when(teamRepository.save(any(TeamEntity.class))).thenReturn(teamEntity);
+
+        // Act
+        Boolean result = tournamentService.removeTeam(request);
+
+        // Assert
+        assertTrue(result);
+        assertFalse(tournamentEntity2.getTeams().contains(teamEntity));
+        assertTrue(tournamentEntity2.getTeams().contains(teamEntity2)); // O outro time permanece
+        assertEquals(1, tournamentEntity2.getTeams().size());
     }
 }

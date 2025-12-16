@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
 @Builder
@@ -26,4 +28,7 @@ public class Tournament {
     private LocalDateTime endTime;
     private Status status;
     private String invite;
+
+    @Builder.Default
+    private Map<Long, Long> teamCoaches = new HashMap<>();
 }

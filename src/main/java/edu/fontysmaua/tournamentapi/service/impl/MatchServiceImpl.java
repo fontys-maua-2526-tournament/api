@@ -50,30 +50,30 @@ public class MatchServiceImpl implements MatchService {
 
     @Override
     public GetAllUpcomingMatchesResponse findAllUpcoming() {
-        return new GetAllUpcomingMatchesResponse(matchMapper.entitiesToModels(matchRepository.findAllByTournamentStartTime(LocalDateTime.now())));
+        return new GetAllUpcomingMatchesResponse(
+                matchMapper.entitiesToModels(matchRepository.findAllByTournamentStartTime(LocalDateTime.now())));
     }
 
     @Override
     public SavedMatchResponse create(SaveMatchRequest request) {
         TournamentEntity tournament = tournamentRepository.findById(request.getTournamentId())
-            .orElseThrow(() -> new RuntimeException("Tournament not found"));
+                .orElseThrow(() -> new RuntimeException("Tournament not found"));
 
         TeamEntity team1 = teamRepository.findById(request.getTeam1Id())
-            .orElseThrow(() -> new RuntimeException("Team 1 not found"));
+                .orElseThrow(() -> new RuntimeException("Team 1 not found"));
 
         TeamEntity team2 = teamRepository.findById(request.getTeam2Id())
-            .orElseThrow(() -> new RuntimeException("Team 2 not found"));
+                .orElseThrow(() -> new RuntimeException("Team 2 not found"));
 
         MatchEntity savedMatch = matchRepository.save(
-            MatchEntity.builder()
-                .tournament(tournament)
-                .round(request.getRound())
-                .team1(team1)
-                .team2(team2)
-                .team1Score(request.getTeam1Score())
-                .team2Score(request.getTeam2Score())
-                .build()
-        );
+                MatchEntity.builder()
+                        .tournament(tournament)
+                        .round(request.getRound())
+                        .team1(team1)
+                        .team2(team2)
+                        .team1Score(request.getTeam1Score())
+                        .team2Score(request.getTeam2Score())
+                        .build());
         return new SavedMatchResponse(matchMapper.entityToModel(savedMatch));
     }
 
@@ -109,20 +109,35 @@ public class MatchServiceImpl implements MatchService {
         return new SavedMatchResponse(matchMapper.entityToModel(updated));
     }
 
-    @Override 
+    @Override
     public Long cancelMatch(Long matchId) {
         var match = matchRepository.findById(matchId).orElseThrow(() -> new RuntimeException("Match not found"));
 
-        if (match.getStatus() ==  Status.CANCELLED){
+        if (match.getStatus() == Status.CANCELLED) {
             throw new RuntimeException("Match is already cancelled!");
         }
 
-        if(match.getStatus() == Status.COMPLETED) {
+        if (match.getStatus() == Status.COMPLETED) {
             throw new RuntimeException("Cannot cancel a match with scores already set");
         }
 
         match.setStatus(Status.CANCELLED);
         matchRepository.save(match);
+        return matchId;
+    }
+
+    @Override
+    public Long deleteMatch(Long matchId) {
+        if (matchId == null) {
+            throw new IllegalArgumentException("Match ID cannot be null");
+        }
+        if (matchId <= 0) {
+            throw new IllegalArgumentException("Match ID must be greater than 0");
+        }
+        if (!matchRepository.existsById(matchId)) {
+            throw new EntityNotFoundException("Match not found with id: " + matchId);
+        }
+        matchRepository.deleteById(matchId);
         return matchId;
     }
 }

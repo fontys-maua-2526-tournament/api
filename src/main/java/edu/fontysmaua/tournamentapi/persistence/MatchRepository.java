@@ -11,4 +11,8 @@ import java.util.List;
 @Repository
 public interface MatchRepository extends JpaRepository<MatchEntity, Long> {
     List<MatchEntity> findAllByTournamentStartTime(LocalDateTime startTime);
+
+    List<MatchEntity> findByTournamentId(Long tournamentId);
+    
+    List<MatchEntity> findByTournamentIdAndRound(Long tournamentId, Integer round);
 }

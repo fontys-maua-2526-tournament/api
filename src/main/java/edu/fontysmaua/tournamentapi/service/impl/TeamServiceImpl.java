@@ -3,6 +3,7 @@ package edu.fontysmaua.tournamentapi.service.impl;
 import edu.fontysmaua.tournamentapi.domain.Team;
 import edu.fontysmaua.tournamentapi.domain.request.SaveTeamRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllTeamsResponse;
+import edu.fontysmaua.tournamentapi.domain.response.GetTeamMembersResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetTeamsByUserIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedTeamResponse;
 import edu.fontysmaua.tournamentapi.mapper.TeamMapper;
@@ -15,6 +16,7 @@ import edu.fontysmaua.tournamentapi.service.TeamService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,12 +77,19 @@ public class TeamServiceImpl implements TeamService {
         return id;
     }
 
+    @Transactional
     public GetTeamsByUserIdResponse AddUserToTeam(Long userId, String inviteCode) {
-        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
-        TeamEntity teamEntity = teamRepository.findByInviteCode(inviteCode).orElseThrow(() -> new EntityNotFoundException("Team not found with invite code: " + inviteCode));
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+        TeamEntity teamEntity = teamRepository.findByInvite(inviteCode)
+                .orElseThrow(() -> new EntityNotFoundException("Team not found with invite code: " + inviteCode));
 
+        // Synchronize both sides of the bidirectional relationship
         userEntity.getTeams().add(teamEntity);
+        teamEntity.getUsers().add(userEntity);
+
         userRepository.save(userEntity);
+        teamRepository.save(teamEntity);
 
         List<TeamEntity> userTeams = new ArrayList<>(userEntity.getTeams());
         GetTeamsByUserIdResponse dto = new GetTeamsByUserIdResponse();
@@ -88,5 +97,16 @@ public class TeamServiceImpl implements TeamService {
         dto.setTeams(teamMapper.entitiesToModels(userTeams));
         dto.setUser(userMapper.entityToModel(userEntity));
         return dto;
+    }
+
+    @Override
+    @Transactional
+    public GetTeamMembersResponse getTeamMembers(Long teamId) {
+        TeamEntity teamEntity = teamRepository.findById(teamId)
+                .orElseThrow(() -> new EntityNotFoundException("Team not found with id: " + teamId));
+
+        GetTeamMembersResponse response = new GetTeamMembersResponse();
+        response.setMembers(userMapper.entitiesToUsers(teamEntity.getUsers()));
+        return response;
     }
 }

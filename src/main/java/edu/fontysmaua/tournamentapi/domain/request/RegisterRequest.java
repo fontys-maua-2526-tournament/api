@@ -23,7 +23,7 @@ public class RegisterRequest {
     @NotBlank
     private String email;
     @NotBlank
-    @Size(min=2, max=30)
+    @Size(min = 2, max = 30)
     private String password;
 
     @NotBlank

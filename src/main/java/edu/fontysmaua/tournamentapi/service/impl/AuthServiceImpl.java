@@ -24,8 +24,8 @@ public class AuthServiceImpl implements AuthService {
     private final UserMapper userMapper;
     private final JwtService jwtService;
 
-    public AuthResponse register(RegisterRequest req){
-        if(userRepo.existsByEmail(req.getEmail())){
+    public AuthResponse register(RegisterRequest req) {
+        if (userRepo.existsByEmail(req.getEmail())) {
             throw new BadCredentialsException("Email already exists");
         }
         UserEntity toSave = new UserEntity();
@@ -43,7 +43,8 @@ public class AuthServiceImpl implements AuthService {
     }
 
     public AuthResponse login(LoginRequest req) {
-        UserEntity user = userRepo.findByEmail(req.getEmail()).orElseThrow(() -> new EntityNotFoundException("User not found with email: " + req.getEmail()));
+        UserEntity user = userRepo.findByEmail(req.getEmail())
+                .orElseThrow(() -> new EntityNotFoundException("User not found with email: " + req.getEmail()));
         if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("Invalid credentials");
         }
@@ -57,6 +58,7 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtService.generateToken(userPrincipal);
 
         AuthResponse res = new AuthResponse();
+        res.setId(saved.getId());
         res.setToken(token);
         res.setEmail(saved.getEmail());
         res.setRole(saved.getUserRole().name());

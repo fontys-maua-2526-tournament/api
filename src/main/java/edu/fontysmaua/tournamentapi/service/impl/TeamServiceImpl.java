@@ -78,7 +78,7 @@ public class TeamServiceImpl implements TeamService {
     }
 
     @Transactional
-    public GetTeamsByUserIdResponse AddUserToTeam(Long userId, String inviteCode) {
+    public GetTeamsByUserIdResponse joinTeamViaInvite (Long userId, String inviteCode) {
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
         TeamEntity teamEntity = teamRepository.findByInviteCode(inviteCode)

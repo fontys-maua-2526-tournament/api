@@ -15,7 +15,7 @@ public interface TeamService {
 
     Long delete(Long teamId);
 
-    GetTeamsByUserIdResponse AddUserToTeam(Long userId, String inviteCode);
+    GetTeamsByUserIdResponse joinTeamViaInvite(Long userId, String inviteCode);
 
     GetTeamMembersResponse getTeamMembers(Long teamId);
 }

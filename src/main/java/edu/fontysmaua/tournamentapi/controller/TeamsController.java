@@ -44,7 +44,7 @@ public class TeamsController {
     @PostMapping("/addToTeam/{userId}/{inviteCode}")
     public ResponseEntity<GetTeamsByUserIdResponse> addToTeam(@PathVariable("userId") Long userId,
             @PathVariable("inviteCode") String inviteCode) {
-        return ResponseEntity.ok(teamService.AddUserToTeam(userId, inviteCode));
+        return ResponseEntity.ok(teamService.joinTeamViaInvite(userId, inviteCode));
     }
 
     @GetMapping("/{teamId}/members")

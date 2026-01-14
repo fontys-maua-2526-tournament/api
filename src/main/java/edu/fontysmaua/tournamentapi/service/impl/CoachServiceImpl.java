@@ -142,7 +142,7 @@ public class CoachServiceImpl implements CoachService {
         }
 
         // Find the athlete
-        UserEntity athlete = userRepository.findByIdAndUserRole(request.getAthleteId(), UserRole.ATHLETE)
+        UserEntity athlete = userRepository.findByIdAndUserRole(request.getUserId(), UserRole.ATHLETE)
                 .orElseThrow(() -> new IllegalArgumentException("Athlete not found"));
 
         // Verify the athlete is underage

@@ -16,6 +16,6 @@ public class AddAthleteToTeamRequest {
 
     @NotNull
     @Positive
-    private Long athleteId;
+    private Long userId;
 }
 

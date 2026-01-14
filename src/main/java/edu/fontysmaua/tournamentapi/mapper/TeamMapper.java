@@ -3,14 +3,19 @@ package edu.fontysmaua.tournamentapi.mapper;
 import edu.fontysmaua.tournamentapi.domain.Team;
 import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface TeamMapper {
+    @Mapping(source = "invite", target = "inviteCode")
     Team entityToModel(TeamEntity teamEntity);
+
+    @Mapping(source = "inviteCode", target = "invite")
     TeamEntity modelToEntity(Team team);
 
     List<Team> entitiesToModels(List<TeamEntity> teamEntities);
+
     List<TeamEntity> modelsToEntities(List<Team> teams);
 }

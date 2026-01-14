@@ -16,6 +16,8 @@ public interface MatchService {
     SavedMatchResponse create(SaveMatchRequest request);
 
     SavedMatchResponse update(SaveMatchRequest request);
-  
+
     Long cancelMatch(Long matchId);
+
+    Long deleteMatch(Long matchId);
 }

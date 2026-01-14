@@ -22,7 +22,7 @@ import jakarta.validation.constraints.Positive;
 @RestController
 @RequestMapping("/tournaments")
 @AllArgsConstructor
-@CrossOrigin(origins = {"http://localhost:5173"})
+@CrossOrigin(origins = { "http://localhost:5173" })
 public class TournamentController {
     private final TournamentService tournamentService;
 
@@ -32,7 +32,7 @@ public class TournamentController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<GetTournamentByIdResponse> getById(@PathVariable @Positive Long id) {
+    public ResponseEntity<GetTournamentByIdResponse> getById(@PathVariable("id") @Positive Long id) {
         return ResponseEntity.ok(tournamentService.findById(id));
     }
 
@@ -43,7 +43,8 @@ public class TournamentController {
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<SavedTournamentResponse> update(@PathVariable @Positive Long id, @RequestBody @Valid SaveTournamentRequest request) {
+    public ResponseEntity<SavedTournamentResponse> update(@PathVariable("id") @Positive Long id,
+            @RequestBody @Valid SaveTournamentRequest request) {
         if (!request.getId().equals(id)) {
             return ResponseEntity.badRequest().build();
         }
@@ -54,12 +55,10 @@ public class TournamentController {
     @PostMapping("{tournamentId}/register/{teamId}")
     public ResponseEntity<String> registerTeam(
             @PathVariable @NotNull @Positive Long teamId,
-            @PathVariable @NotNull @NotBlank Long tournamentId
-    ) {
-        if(tournamentService.addTeam(new AddTeamToTournament(teamId, tournamentId))) {
+            @PathVariable @NotNull @NotBlank Long tournamentId) {
+        if (tournamentService.addTeam(new AddTeamToTournament(teamId, tournamentId))) {
             return ResponseEntity.ok("Team registered successfully");
-        }
-        else {
+        } else {
             return ResponseEntity.badRequest().build();
         }
     }
@@ -67,18 +66,16 @@ public class TournamentController {
     @PostMapping("{tournamentId}/withdraw/{teamId}")
     public ResponseEntity<String> withdrawTeam(
             @PathVariable @NotNull @Positive Long teamId,
-            @PathVariable @NotNull @NotBlank Long tournamentId
-    ) {
-        if(tournamentService.removeTeam(new RemoveTeamFromTournamentRequest(teamId, tournamentId))) {
+            @PathVariable @NotNull @NotBlank Long tournamentId) {
+        if (tournamentService.removeTeam(new RemoveTeamFromTournamentRequest(teamId, tournamentId))) {
             return ResponseEntity.ok("Team withdrawn successfully");
-        }
-        else {
+        } else {
             return ResponseEntity.badRequest().build();
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Long> delete(@PathVariable @NotNull @Positive Long id) {
+    public ResponseEntity<Long> delete(@PathVariable("id") @NotNull @Positive Long id) {
         return ResponseEntity.ok(tournamentService.cancel(id));
     }
 

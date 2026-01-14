@@ -20,12 +20,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/matches")
 @RequiredArgsConstructor
-@CrossOrigin(origins = {"http://localhost:5173"})
+@CrossOrigin(origins = { "http://localhost:5173" })
 public class MatchController {
     private final MatchService matchService;
 
@@ -38,7 +39,7 @@ public class MatchController {
     public ResponseEntity<GetAllUpcomingMatchesResponse> findAllUpcoming() {
         return ResponseEntity.ok(matchService.findAllUpcoming());
     }
-  
+
     @GetMapping("/{id}")
     public ResponseEntity<GetMatchByIdResponse> getById(@PathVariable @Positive Long id) {
         return ResponseEntity.ok(matchService.findById(id));
@@ -51,9 +52,8 @@ public class MatchController {
 
     @PutMapping("/{id}")
     public ResponseEntity<SavedMatchResponse> update(
-            @PathVariable @Positive Long id,
-            @RequestBody @Valid SaveMatchRequest request
-    ) {
+            @PathVariable("id") @Positive Long id,
+            @RequestBody @Valid SaveMatchRequest request) {
         if (!request.getId().equals(id)) {
             return ResponseEntity.badRequest().build();
         }
@@ -62,7 +62,12 @@ public class MatchController {
     }
 
     @GetMapping("/cancel/{id}")
-    public ResponseEntity<Long> cancel (@PathVariable @Positive Long id){
+    public ResponseEntity<Long> cancel(@PathVariable("id") @Positive Long id) {
         return ResponseEntity.ok(matchService.cancelMatch(id));
+}
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Long> delete(@PathVariable("id") @Positive Long id) {
+        return ResponseEntity.ok(matchService.deleteMatch(id));
     }
 }

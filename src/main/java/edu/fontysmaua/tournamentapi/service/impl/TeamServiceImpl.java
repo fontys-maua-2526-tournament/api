@@ -1,11 +1,10 @@
 package edu.fontysmaua.tournamentapi.service.impl;
 
 import edu.fontysmaua.tournamentapi.domain.Team;
+import edu.fontysmaua.tournamentapi.domain.request.AddAthleteToTeamRequest;
 import edu.fontysmaua.tournamentapi.domain.request.SaveTeamRequest;
-import edu.fontysmaua.tournamentapi.domain.response.GetAllTeamsResponse;
-import edu.fontysmaua.tournamentapi.domain.response.GetTeamMembersResponse;
-import edu.fontysmaua.tournamentapi.domain.response.GetTeamsByUserIdResponse;
-import edu.fontysmaua.tournamentapi.domain.response.SavedTeamResponse;
+import edu.fontysmaua.tournamentapi.domain.response.*;
+import edu.fontysmaua.tournamentapi.enums.UserRole;
 import edu.fontysmaua.tournamentapi.mapper.TeamMapper;
 import edu.fontysmaua.tournamentapi.mapper.UserMapper;
 import edu.fontysmaua.tournamentapi.persistence.TeamRepository;
@@ -13,6 +12,7 @@ import edu.fontysmaua.tournamentapi.persistence.UserRepository;
 import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
 import edu.fontysmaua.tournamentapi.persistence.entity.UserEntity;
 import edu.fontysmaua.tournamentapi.service.TeamService;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -77,6 +77,28 @@ public class TeamServiceImpl implements TeamService {
         return id;
     }
 
+    public TeamMemberResponse addAthlete(AddAthleteToTeamRequest req, String coachEmail) {
+        userRepository.findByEmailAndUserRole(coachEmail, UserRole.COACH)
+                .orElseThrow(() -> new EntityNotFoundException("This coach doesn't exist"));
+        var athlete = userRepository.findById(req.getUserId())
+                .orElseThrow(() -> new EntityNotFoundException("This athlete doesn't exist"));
+
+        TeamEntity team = teamRepository.getReferenceById(req.getTeamId());
+
+        if(!team.getCoach().getEmail().equals(coachEmail))
+            throw new IllegalArgumentException("You are not the coach of this team");
+
+        if(team.getMembers().contains(athlete))
+            throw new EntityExistsException("Athlete already a member of this team");
+
+        team.getMembers().add(athlete);
+
+        return new TeamMemberResponse(
+                teamMapper.entityToModel(teamRepository.save(team)),
+                "Added athlete to the team"
+        );
+    }
+
     @Transactional
     public GetTeamsByUserIdResponse joinTeamViaInvite (Long userId, String inviteCode) {
         UserEntity userEntity = userRepository.findById(userId)
@@ -100,13 +122,11 @@ public class TeamServiceImpl implements TeamService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public GetTeamMembersResponse getTeamMembers(Long teamId) {
         TeamEntity teamEntity = teamRepository.findById(teamId)
                 .orElseThrow(() -> new EntityNotFoundException("Team not found with id: " + teamId));
 
-        GetTeamMembersResponse response = new GetTeamMembersResponse();
-        response.setMembers(userMapper.entitiesToModels(teamEntity.getMembers()));
-        return response;
+        return new GetTeamMembersResponse(userMapper.entitiesToModels(teamEntity.getMembers()));
     }
 }

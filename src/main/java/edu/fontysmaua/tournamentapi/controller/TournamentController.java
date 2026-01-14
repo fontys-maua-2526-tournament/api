@@ -4,11 +4,13 @@ import edu.fontysmaua.tournamentapi.domain.request.AddTeamToTournament;
 import edu.fontysmaua.tournamentapi.domain.request.RemoveTeamFromTournamentRequest;
 import edu.fontysmaua.tournamentapi.domain.request.SaveTournamentRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllTournamentsResponse;
+import edu.fontysmaua.tournamentapi.domain.response.GetMatchesByTournamentRoundResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetTournamentByIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetTournamentsByUserIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedTournamentResponse;
 import edu.fontysmaua.tournamentapi.service.TournamentService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -16,10 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.constraints.Positive;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/tournaments")
@@ -79,5 +77,22 @@ public class TournamentController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Long> delete(@PathVariable("id") @NotNull @Positive Long id) {
         return ResponseEntity.ok(tournamentService.cancel(id));
+    }
+
+    @GetMapping("/{tournamentId}/matches")
+    public ResponseEntity<GetMatchesByTournamentRoundResponse> getTournamentMatches(
+            @PathVariable @NotNull @Positive Long tournamentId) {
+        GetMatchesByTournamentRoundResponse response = 
+            tournamentService.getTournamentMatchesByRound(tournamentId, null);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{tournamentId}/matches/round/{round}")
+    public ResponseEntity<GetMatchesByTournamentRoundResponse> getTournamentMatchesByRound(
+            @PathVariable @NotNull @Positive Long tournamentId,
+            @PathVariable @NotNull @Min(0) Integer round) {
+        GetMatchesByTournamentRoundResponse response = 
+            tournamentService.getTournamentMatchesByRound(tournamentId, round);
+        return ResponseEntity.ok(response);
     }
 }

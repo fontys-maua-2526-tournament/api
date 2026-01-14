@@ -1,18 +1,24 @@
 package edu.fontysmaua.tournamentapi.service.impl;
 
+import edu.fontysmaua.tournamentapi.domain.Match;
 import edu.fontysmaua.tournamentapi.domain.request.AddTeamToTournament;
 import edu.fontysmaua.tournamentapi.domain.request.RemoveTeamFromTournamentRequest;
 import edu.fontysmaua.tournamentapi.domain.request.SaveTournamentRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllTournamentsResponse;
+import edu.fontysmaua.tournamentapi.domain.response.GetMatchesByTournamentRoundResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetTournamentByIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetTournamentsByUserIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedTournamentResponse;
 import edu.fontysmaua.tournamentapi.enums.Status;
 import edu.fontysmaua.tournamentapi.exception.NameAlreadyExistsException;
+import edu.fontysmaua.tournamentapi.mapper.MatchMapper;
 import edu.fontysmaua.tournamentapi.mapper.TeamMapper;
 import edu.fontysmaua.tournamentapi.mapper.TournamentMapper;
+import edu.fontysmaua.tournamentapi.persistence.MatchRepository;
 import edu.fontysmaua.tournamentapi.persistence.TeamRepository;
 import edu.fontysmaua.tournamentapi.persistence.TournamentRepository;
+import edu.fontysmaua.tournamentapi.persistence.entity.MatchEntity;
+import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
 import edu.fontysmaua.tournamentapi.persistence.entity.TournamentEntity;
 import edu.fontysmaua.tournamentapi.service.TournamentService;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,6 +26,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.UUID.randomUUID;
@@ -32,6 +39,9 @@ public class TournamentServiceImpl implements TournamentService {
 
     private final TeamRepository teamRepository;
     private final TeamMapper teamMapper;
+
+    private final MatchRepository matchRepository;
+    private final MatchMapper matchMapper;
 
     @Override
     public GetAllTournamentsResponse findAll() {
@@ -119,28 +129,79 @@ public class TournamentServiceImpl implements TournamentService {
 
     @Override
     public Boolean addTeam(AddTeamToTournament request) {
-        if (!teamRepository.existsById(request.getTeamId())) {
-            throw new IllegalArgumentException("Team not found");
-        }
-        if (!tournamentRepository.existsById(request.getTournamentId())) {
-            throw new IllegalArgumentException("Tournament not found");
+        TeamEntity team = teamRepository.findById(request.getTeamId())
+            .orElseThrow(() -> new IllegalArgumentException("Team not found with ID: " + request.getTeamId()));
+
+        TournamentEntity tournament = tournamentRepository.findById(request.getTournamentId())
+            .orElseThrow(() -> new IllegalArgumentException("Tournament not found with ID: " + request.getTournamentId()));
+
+        if (tournament.getStartTime() != null && tournament.getStartTime().isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("Cannot register team after tournament has started");
         }
 
-        System.out.printf("Team %d registered in tournament %d%n", request.getTeamId(), request.getTournamentId());
-        return false;
+        if (tournament.getTeams() == null) {
+            tournament.setTeams(new ArrayList<>());
+        }
+
+        boolean isAlreadyRegistered = tournament.getTeams().stream()
+            .anyMatch(t -> t.getId().equals(request.getTeamId()));
+    
+        if (isAlreadyRegistered) {
+            throw new IllegalStateException(
+                String.format("Team %s is already registered in tournament %s", 
+                    team.getName(), tournament.getName())
+            );
+        }
+
+        tournament.getTeams().add(team);
+
+        if (team.getTournaments() == null) {
+            team.setTournaments(new ArrayList<>());
+        }
+        team.getTournaments().add(tournament);
+
+        tournamentRepository.save(tournament);
+        teamRepository.save(team);
+
+        System.out.printf("Team '%s' (ID: %d) successfully registered in tournament '%s' (ID: %d)%n", 
+                team.getName(), request.getTeamId(), tournament.getName(), request.getTournamentId());
+        
+        return true;
     }
 
     @Override
     public Boolean removeTeam(RemoveTeamFromTournamentRequest request) {
-        if (!teamRepository.existsById(request.getTeamId())) {
-            throw new IllegalArgumentException("Team not found");
+        TeamEntity team = teamRepository.findById(request.getTeamId())
+            .orElseThrow(() -> new IllegalArgumentException("Team not found with ID: " + request.getTeamId()));
+        TournamentEntity tournament = tournamentRepository.findById(request.getTournamentId())
+            .orElseThrow(() -> new IllegalArgumentException("Tournament not found with ID: " + request.getTournamentId()));
+        
+        if (tournament.getStartTime() != null && tournament.getStartTime().isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("Cannot remove team after tournament has started");
         }
-        if (!tournamentRepository.existsById(request.getTournamentId())) {
-            throw new IllegalArgumentException("Tournament not found");
-        }
-        System.out.printf("Team %d withdrawn from tournament %d%n", request.getTeamId(), request.getTournamentId());
 
-        return false;
+        boolean isRegistered = tournament.getTeams() != null && tournament.getTeams().stream().anyMatch(t -> t.getId().equals(request.getTeamId()));
+    
+        if (!isRegistered) {
+            throw new IllegalStateException(
+                String.format("Team %s is not registered in tournament %s", 
+                    team.getName(), tournament.getName())
+            );
+        }
+
+        tournament.getTeams().removeIf(t -> t.getId().equals(request.getTeamId()));
+
+        if (team.getTournaments() != null) {
+            team.getTournaments().removeIf(t -> t.getId().equals(request.getTournamentId()));
+        }
+
+        tournamentRepository.save(tournament);
+        teamRepository.save(team);
+
+        System.out.printf("Team '%s' (ID: %d) successfully removed from tournament '%s' (ID: %d)%n", 
+                team.getName(), request.getTeamId(), tournament.getName(), request.getTournamentId());
+
+        return true;
     }
 
     public Long cancel(Long tournamentId) {
@@ -148,5 +209,32 @@ public class TournamentServiceImpl implements TournamentService {
         tournament.setStatus(Status.CANCELLED);
         tournamentRepository.save(tournament);
         return tournamentId;
+    }
+
+    @Override
+    public GetMatchesByTournamentRoundResponse getTournamentMatchesByRound(Long tournamentId, Integer round) {
+        if (tournamentId == null || tournamentId <= 0) {
+            throw new IllegalArgumentException("Tournament ID must be greater than 0");
+        }
+        
+        if (!tournamentRepository.existsById(tournamentId)) {
+            throw new IllegalArgumentException("Tournament not found with ID: " + tournamentId);
+        }
+        
+        if (round != null && round < 0) {
+            throw new IllegalArgumentException("Round must be a non-negative integer");
+        }
+        
+        List<MatchEntity> matchEntities;
+        
+        if (round != null) {
+            matchEntities = matchRepository.findByTournamentIdAndRound(tournamentId, round);
+        } else {
+            matchEntities = matchRepository.findByTournamentId(tournamentId);
+        }
+        
+        List<Match> matches = matchMapper.entitiesToModels(matchEntities);
+        
+        return new GetMatchesByTournamentRoundResponse(tournamentId, round, matches);
     }
 }

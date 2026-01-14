@@ -11,15 +11,12 @@ import edu.fontysmaua.tournamentapi.domain.response.GetTournamentByIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedTournamentResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetMatchesByTournamentRoundResponse;
 import edu.fontysmaua.tournamentapi.enums.Status;
-import edu.fontysmaua.tournamentapi.exception.NameAlreadyExistsException;
-import edu.fontysmaua.tournamentapi.mapper.MatchMapper;
 import edu.fontysmaua.tournamentapi.mapper.TournamentMapper;
 import edu.fontysmaua.tournamentapi.persistence.MatchRepository;
 import edu.fontysmaua.tournamentapi.persistence.TournamentRepository;
 import edu.fontysmaua.tournamentapi.persistence.TeamRepository;
 import edu.fontysmaua.tournamentapi.persistence.entity.TournamentEntity;
-import edu.fontysmaua.tournamentapi.persistence.entity.MatchEntity;
-import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +25,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -90,28 +88,13 @@ class TournamentServiceImplTest {
                 .startTime(startTime)
                 .endTime(endTime)
                 .build();
-        
-        LocalDateTime futureStartTime = LocalDateTime.now().plusDays(1);
-        tournamentEntity2 = TournamentEntity.builder()
-                .id(2L)
-                .name("Future Championship")
-                .address("456 Future St")
-                .startTime(futureStartTime)
-                .endTime(futureStartTime.plusHours(8))
-                .status(Status.SCHEDULED)
-                .teams(new ArrayList<>())
-                .build();
 
-        teamEntity = TeamEntity.builder()
+        SaveTournamentRequest.builder()
                 .id(1L)
-                .name("Team Alpha")
-                .tournaments(new ArrayList<>())
-                .build();
-
-        teamEntity2 = TeamEntity.builder()
-                .id(2L)
-                .name("Team Beta")
-                .tournaments(new ArrayList<>())
+                .name("Spring Championship")
+                .address("123 Main St")
+                .startTime(startTime)
+                .endTime(endTime)
                 .build();
     }
 
@@ -138,7 +121,7 @@ class TournamentServiceImplTest {
                         .endTime(endTime)
                         .build());
 
-        when(tournamentRepository.findAll()).thenReturn(entities);
+        when(tournamentRepository.findAll(Sort.by(Sort.Direction.ASC, "id"))).thenReturn(entities);
         when(tournamentMapper.entitiesToModels(entities)).thenReturn(tournaments);
 
         // Act
@@ -147,7 +130,7 @@ class TournamentServiceImplTest {
         // Assert
         assertNotNull(response);
         assertEquals(2, response.getTournaments().size());
-        verify(tournamentRepository, times(1)).findAll();
+        verify(tournamentRepository, times(1)).findAll(Sort.by(Sort.Direction.ASC, "id"));
         verify(tournamentMapper, times(1)).entitiesToModels(entities);
     }
 
@@ -155,7 +138,7 @@ class TournamentServiceImplTest {
     void findAll_ShouldReturnEmptyList_WhenNoTournamentsExist() {
         // Arrange
         List<TournamentEntity> emptyList = new ArrayList<>();
-        when(tournamentRepository.findAll()).thenReturn(emptyList);
+        when(tournamentRepository.findAll(Sort.by(Sort.Direction.ASC, "id"))).thenReturn(emptyList);
         when(tournamentMapper.entitiesToModels(emptyList)).thenReturn(List.of());
 
         // Act
@@ -164,7 +147,7 @@ class TournamentServiceImplTest {
         // Assert
         assertNotNull(response);
         assertTrue(response.getTournaments().isEmpty());
-        verify(tournamentRepository, times(1)).findAll();
+        verify(tournamentRepository, times(1)).findAll(Sort.by(Sort.Direction.ASC, "id"));
     }
 
     // ==================== findById() Tests ====================
@@ -388,7 +371,7 @@ class TournamentServiceImplTest {
         when(tournamentRepository.existsByName("Existing Tournament")).thenReturn(true);
 
         // Act & Assert
-        assertThrows(NameAlreadyExistsException.class, () -> tournamentService.create(request));
+        assertThrows(EntityExistsException.class, () -> tournamentService.create(request));
 
         verify(tournamentRepository, times(1)).existsByName("Existing Tournament");
         verify(tournamentRepository, never()).save(any());

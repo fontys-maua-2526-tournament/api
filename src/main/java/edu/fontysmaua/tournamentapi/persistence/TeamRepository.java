@@ -10,5 +10,9 @@ import java.util.Optional;
 
 @Repository
 public interface TeamRepository extends JpaRepository<TeamEntity, Long> {
-    Optional<TeamEntity> findByInvite(String invite);
+    Optional<TeamEntity> findByInviteCode(String inviteCode);
+
+    List<TeamEntity> findAllByCoachId(Long coachId);
+
+    boolean existsByInviteCode(String inviteCode);
 }

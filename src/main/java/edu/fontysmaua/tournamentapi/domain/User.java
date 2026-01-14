@@ -21,4 +21,12 @@ public class User {
     private String phoneNumber;
     private LocalDate dateOfBirth;
     private UserRole userRole;
+
+    public boolean isUnderage() {
+        if (dateOfBirth == null) {
+            return false;
+        }
+        return dateOfBirth.plusYears(18).isAfter(LocalDate.now());
+    }
 }
+

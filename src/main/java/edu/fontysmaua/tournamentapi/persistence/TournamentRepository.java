@@ -10,5 +10,5 @@ import java.util.List;
 public interface TournamentRepository extends JpaRepository<TournamentEntity, Long> {
     boolean existsByName(String name);
 
-    List<TournamentEntity> findAllByTeamsUsersId(Long userId);
+    List<TournamentEntity> findAllByTeamsMembersId(Long memberId);
 }

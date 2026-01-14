@@ -10,8 +10,6 @@ import edu.fontysmaua.tournamentapi.domain.response.GetTournamentByIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetTournamentsByUserIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedTournamentResponse;
 import edu.fontysmaua.tournamentapi.enums.Status;
-import edu.fontysmaua.tournamentapi.exception.NameAlreadyExistsException;
-import edu.fontysmaua.tournamentapi.mapper.MatchMapper;
 import edu.fontysmaua.tournamentapi.mapper.TeamMapper;
 import edu.fontysmaua.tournamentapi.mapper.TournamentMapper;
 import edu.fontysmaua.tournamentapi.persistence.MatchRepository;
@@ -21,15 +19,15 @@ import edu.fontysmaua.tournamentapi.persistence.entity.MatchEntity;
 import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
 import edu.fontysmaua.tournamentapi.persistence.entity.TournamentEntity;
 import edu.fontysmaua.tournamentapi.service.TournamentService;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-import static java.util.UUID.randomUUID;
 
 @Service
 @AllArgsConstructor
@@ -45,7 +43,7 @@ public class TournamentServiceImpl implements TournamentService {
 
     @Override
     public GetAllTournamentsResponse findAll() {
-        List<TournamentEntity> tournaments = tournamentRepository.findAll();
+        List<TournamentEntity> tournaments = tournamentRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
         GetAllTournamentsResponse response = new GetAllTournamentsResponse();
         response.setTournaments(tournamentMapper.entitiesToModels(tournaments));
         return response;
@@ -68,16 +66,14 @@ public class TournamentServiceImpl implements TournamentService {
 
     @Override
     public GetTournamentsByUserIdResponse getByUserId(Long userId) {
-        return new GetTournamentsByUserIdResponse(tournamentMapper.entitiesToModels(tournamentRepository.findAllByTeamsUsersId(userId)));
+        return new GetTournamentsByUserIdResponse(tournamentMapper.entitiesToModels(tournamentRepository.findAllByTeamsMembersId(userId)));
     }
 
     @Override
     public SavedTournamentResponse create(SaveTournamentRequest request) {
         if (tournamentRepository.existsByName(request.getName())) {
-            throw new NameAlreadyExistsException();
+            throw new EntityExistsException("Tournament with this name already exists");
         }
-
-        String inviteCode = new String(randomUUID().toString().getBytes());
 
         Status status = null;
 
@@ -96,7 +92,6 @@ public class TournamentServiceImpl implements TournamentService {
                         .startTime(request.getStartTime())
                         .endTime(request.getEndTime())
                         .status(status)
-                        .invite(inviteCode)
                         .build()
                 );
 

@@ -5,7 +5,6 @@ import edu.fontysmaua.tournamentapi.persistence.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.nio.channels.FileChannel;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,4 +17,8 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     Optional<UserEntity> findByEmail(String email);
 
     List<UserEntity> findAllByUserRole(UserRole userRole);
+
+    Optional<UserEntity> findByIdAndUserRole(Long id, UserRole userRole);
+
+    boolean existsByEmailAndIdNot(String email, Long id);
 }

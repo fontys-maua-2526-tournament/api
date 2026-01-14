@@ -10,6 +10,7 @@ import org.hibernate.validator.constraints.Length;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "team")
@@ -28,12 +29,22 @@ public class TeamEntity {
     @Column(name = "name")
     private String name;
 
-    @NotBlank
-    @Column(name = "invite")
-    private String invite;
+    @Column(name = "invite_code", unique = true)
+    private String inviteCode;
 
-    @ManyToMany(mappedBy = "teams")
-    private List<UserEntity> users  = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "coach_id")
+    private UserEntity coach;
+
+    @ManyToMany
+    @JoinTable(
+            name = "team_members",
+            joinColumns = @JoinColumn(name = "team_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    @Builder.Default
+    private List<UserEntity> members = new ArrayList<>();
+    // Semantics in the dev branch call the field as users rather than members
 
     @ManyToMany
     @JoinTable(
@@ -41,6 +52,7 @@ public class TeamEntity {
             joinColumns = @JoinColumn(name = "team_id"),
             inverseJoinColumns = @JoinColumn(name = "tournament_id")
     )
+    @Builder.Default
     private List<TournamentEntity> tournaments = new ArrayList<>();
 
     @ManyToMany
@@ -49,5 +61,13 @@ public class TeamEntity {
             joinColumns = @JoinColumn(name = "team_id"),
             inverseJoinColumns = @JoinColumn(name = "organization_id")
     )
+    @Builder.Default
     private List<OrganizationEntity> organizations = new ArrayList<>();
+
+    @PrePersist
+    public void generateInviteCode() {
+        if (this.inviteCode == null) {
+            this.inviteCode = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        }
+    }
 }

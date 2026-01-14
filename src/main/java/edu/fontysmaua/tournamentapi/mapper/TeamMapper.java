@@ -7,11 +7,13 @@ import org.mapstruct.Mapping;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {UserMapper.class})
 public interface TeamMapper {
     @Mapping(source = "invite", target = "inviteCode")
     Team entityToModel(TeamEntity teamEntity);
-
+    
+    @Mapping(target = "coach", ignore = true)
+    @Mapping(target = "members", ignore = true)
     @Mapping(source = "inviteCode", target = "invite")
     TeamEntity modelToEntity(Team team);
 

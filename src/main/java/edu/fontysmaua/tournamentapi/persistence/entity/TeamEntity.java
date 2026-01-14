@@ -44,6 +44,23 @@ public class TeamEntity {
     )
     @Builder.Default
     private List<UserEntity> members = new ArrayList<>();
+    // Semantics in the dev branch call the field as users rather than members
+
+    @ManyToMany
+    @JoinTable(
+            name = "team_tournament",
+            joinColumns = @JoinColumn(name = "team_id"),
+            inverseJoinColumns = @JoinColumn(name = "tournament_id")
+    )
+    private List<TournamentEntity> tournaments = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "team_organization",
+            joinColumns = @JoinColumn(name = "team_id"),
+            inverseJoinColumns = @JoinColumn(name = "organization_id")
+    )
+    private List<OrganizationEntity> organizations = new ArrayList<>();
 
     @PrePersist
     public void generateInviteCode() {

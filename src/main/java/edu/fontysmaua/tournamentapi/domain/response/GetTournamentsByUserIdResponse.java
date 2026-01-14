@@ -13,4 +13,3 @@ import java.util.List;
 public class GetTournamentsByUserIdResponse {
     private List<Tournament> tournaments;
 }
-

@@ -1,17 +1,9 @@
 package edu.fontysmaua.tournamentapi.controller;
 
-import edu.fontysmaua.tournamentapi.domain.request.AddAthleteToTeamRequest;
-import edu.fontysmaua.tournamentapi.domain.request.SaveCoachRequest;
-import edu.fontysmaua.tournamentapi.domain.request.UpdateTeamRequest;
-import edu.fontysmaua.tournamentapi.domain.response.GetAllCoachesResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetTournamentsByUserIdResponse;
-import edu.fontysmaua.tournamentapi.domain.response.SavedCoachResponse;
-import edu.fontysmaua.tournamentapi.domain.response.SavedTeamResponse;
-import edu.fontysmaua.tournamentapi.domain.response.TeamMemberResponse;
-import edu.fontysmaua.tournamentapi.service.CoachService;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,34 +11,37 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/coaches")
 @RequiredArgsConstructor
 public class CoachController {
-    private final CoachService coachService;
+    private final UserService userService;
+    private final TournamentService tournamentService;
+    private final AuthService authService;
 
     @GetMapping
-    public ResponseEntity<GetAllCoachesResponse> findAll() {
-        return ResponseEntity.ok(coachService.findAll());
+    public ResponseEntity<GetAllUsersResponse> findAll() {
+        return ResponseEntity.ok(userService.findByRole(UserRole.COACH));
     }
 
     @GetMapping("{id}/tournaments")
     public ResponseEntity<GetTournamentsByUserIdResponse> getTournamentsByUserId(@PathVariable @Positive Long id) {
-        return ResponseEntity.ok(coachService.findTournamentsByUserId(id));
+        return ResponseEntity.ok(tournamentService.getByUserId(id));
     }
 
     @PostMapping("/create")
-    public ResponseEntity<SavedCoachResponse> create(@RequestBody @Valid SaveCoachRequest request) {
-        return ResponseEntity.ok(coachService.create(request));
+    public ResponseEntity<AuthResponse> create(@RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(authService.register(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SavedCoachResponse> update(@PathVariable Long id, @RequestBody @Valid SaveCoachRequest request) {
+    public ResponseEntity<UserDto> update(@PathVariable Long id, @RequestBody UpdateUserRequest request) {
         if (!id.equals(request.getId())) {
             return ResponseEntity.badRequest().build();
         }
-        return ResponseEntity.ok(coachService.update(request));
+        return ResponseEntity.ok(userService.update(request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Long> delete(@PathVariable @Positive Long id) {
-        return ResponseEntity.ok(coachService.delete(id));
+    public ResponseEntity delete(@PathVariable @Positive Long id) {
+        userService.deleteUserById(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @DeleteMapping("/disband/{teamId}")

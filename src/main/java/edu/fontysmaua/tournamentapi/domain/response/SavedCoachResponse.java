@@ -11,4 +11,3 @@ import lombok.NoArgsConstructor;
 public class SavedCoachResponse {
     private User user;
 }
-

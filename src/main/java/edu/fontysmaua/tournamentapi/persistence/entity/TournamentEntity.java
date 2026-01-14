@@ -1,5 +1,6 @@
 package edu.fontysmaua.tournamentapi.persistence.entity;
 
+import edu.fontysmaua.tournamentapi.enums.Status;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -25,6 +26,9 @@ public class TournamentEntity {
     @Column(name = "id")
     private Long id;
 
+    @Column(name="invite")
+    private String invite;
+
     @NotBlank
     @Length(min = 2, max = 50)
     @Column(name = "name")
@@ -39,16 +43,21 @@ public class TournamentEntity {
     @Column(name = "start_time")
     private LocalDateTime startTime;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name ="status")
+    private Status status;
+
     @NotNull
     @Column(name = "end_time")
     private LocalDateTime endTime;
 
-    @ManyToMany
-    @JoinTable(
-            name = "tournament_teams",
-            joinColumns = @JoinColumn(name = "tournament_id"),
-            inverseJoinColumns = @JoinColumn(name = "team_id")
-    )
-    @Builder.Default
+    @ManyToMany(mappedBy = "tournaments")
     private List<TeamEntity> teams = new ArrayList<>();
+
+    @OneToMany(mappedBy = "tournament")
+    private List<MatchEntity> matches = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "organizer_id")
+    private UserEntity organizer;
 }

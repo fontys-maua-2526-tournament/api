@@ -3,6 +3,7 @@ package edu.fontysmaua.tournamentapi.controller;
 
 import edu.fontysmaua.tournamentapi.domain.request.SaveTeamRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllTeamsResponse;
+import edu.fontysmaua.tournamentapi.domain.response.GetTeamsByUserIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedTeamResponse;
 import edu.fontysmaua.tournamentapi.service.TeamService;
 import jakarta.validation.constraints.Positive;
@@ -28,7 +29,7 @@ public class TeamsController {
 
     @PutMapping("/{id}")
     public ResponseEntity<SavedTeamResponse> updateTeam(@PathVariable Long id, @RequestBody SaveTeamRequest request) {
-        if(!request.getId().equals(id)) {
+        if (!request.getId().equals(id)) {
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.ok(teamService.update(request));
@@ -37,5 +38,10 @@ public class TeamsController {
     @PostMapping("/create")
     public ResponseEntity<SavedTeamResponse> createTeam(@RequestBody SaveTeamRequest request) {
         return ResponseEntity.ok(teamService.create(request));
+    }
+
+    @PostMapping("/addToTeam/{userId}/{inviteCode}")
+    public ResponseEntity<GetTeamsByUserIdResponse> addToTeam(@PathVariable Long userId, @PathVariable String inviteCode) {
+        return ResponseEntity.ok(teamService.AddUserToTeam(userId, inviteCode));
     }
 }

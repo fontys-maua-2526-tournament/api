@@ -44,7 +44,7 @@ public class CoachServiceImpl implements CoachService {
         userRepository.findByIdAndUserRole(userId, UserRole.COACH)
                 .orElseThrow(() -> new IllegalArgumentException("Coach not found"));
         
-        return new GetTournamentsByUserIdResponse(tournamentMapper.entitiesToModels(tournamentRepository.findAllByTeamsUsersId(userId)));
+        return new GetTournamentsByUserIdResponse(tournamentMapper.entitiesToModels(tournamentRepository.findAllByTeamsMembersId(userId)));
     }
 
     @Override

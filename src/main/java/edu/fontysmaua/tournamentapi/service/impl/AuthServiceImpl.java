@@ -53,7 +53,7 @@ public class AuthServiceImpl implements AuthService {
 
     @NotNull
     private AuthResponse getAuthResponse(UserEntity saved) {
-        UserPrincipal userPrincipal = new UserPrincipal(userMapper.entityToUser(saved));
+        UserPrincipal userPrincipal = new UserPrincipal(userMapper.entityToModel(saved));
         String token = jwtService.generateToken(userPrincipal);
 
         AuthResponse res = new AuthResponse();

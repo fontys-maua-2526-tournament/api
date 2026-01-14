@@ -38,7 +38,7 @@ public class TeamServiceImpl implements TeamService {
     public SavedTeamResponse create(SaveTeamRequest request) {
         var team = new TeamEntity();
         team.setName(request.getName());
-        team.setInvite(request.getInviteCode());
+        team.setInviteCode(request.getInviteCode());
 
         var saved = teamRepository.save(team);
 
@@ -57,7 +57,7 @@ public class TeamServiceImpl implements TeamService {
         var team = new TeamEntity();
         team.setId(request.getId());
         team.setName(request.getName());
-        team.setInvite(request.getInviteCode());
+        team.setInviteCode(request.getInviteCode());
 
         var updated = teamRepository.save(team);
 
@@ -77,7 +77,7 @@ public class TeamServiceImpl implements TeamService {
 
     public GetTeamsByUserIdResponse AddUserToTeam(Long userId, String inviteCode) {
         UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
-        TeamEntity teamEntity = teamRepository.findByInvite(inviteCode).orElseThrow(() -> new EntityNotFoundException("Team not found with invite code: " + inviteCode));
+        TeamEntity teamEntity = teamRepository.findByInviteCode(inviteCode).orElseThrow(() -> new EntityNotFoundException("Team not found with invite code: " + inviteCode));
 
         userEntity.getTeams().add(teamEntity);
         userRepository.save(userEntity);
@@ -86,7 +86,7 @@ public class TeamServiceImpl implements TeamService {
         GetTeamsByUserIdResponse dto = new GetTeamsByUserIdResponse();
 
         dto.setTeams(teamMapper.entitiesToModels(userTeams));
-        dto.setUser(userMapper.entityToUser(userEntity));
+        dto.setUser(userMapper.entityToModel(userEntity));
         return dto;
     }
 }

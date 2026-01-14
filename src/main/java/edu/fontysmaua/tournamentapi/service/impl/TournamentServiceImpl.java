@@ -23,8 +23,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static java.util.UUID.randomUUID;
-
 @Service
 @AllArgsConstructor
 public class TournamentServiceImpl implements TournamentService {
@@ -36,7 +34,7 @@ public class TournamentServiceImpl implements TournamentService {
 
     @Override
     public GetAllTournamentsResponse findAll() {
-        List<TournamentEntity> tournaments = tournamentRepository.findAll(tournamentRepository.findAll(Sort.by(Sort.Direction.ASC, "id")));
+        List<TournamentEntity> tournaments = tournamentRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
         GetAllTournamentsResponse response = new GetAllTournamentsResponse();
         response.setTournaments(tournamentMapper.entitiesToModels(tournaments));
         return response;
@@ -59,7 +57,7 @@ public class TournamentServiceImpl implements TournamentService {
 
     @Override
     public GetTournamentsByUserIdResponse getByUserId(Long userId) {
-        return new GetTournamentsByUserIdResponse(tournamentMapper.entitiesToModels(tournamentRepository.findAllByTeamsUsersId(userId)));
+        return new GetTournamentsByUserIdResponse(tournamentMapper.entitiesToModels(tournamentRepository.findAllByTeamsMembersId(userId)));
     }
 
     @Override

@@ -52,6 +52,7 @@ public class TeamEntity {
             joinColumns = @JoinColumn(name = "team_id"),
             inverseJoinColumns = @JoinColumn(name = "tournament_id")
     )
+    @Builder.Default
     private List<TournamentEntity> tournaments = new ArrayList<>();
 
     @ManyToMany
@@ -60,6 +61,7 @@ public class TeamEntity {
             joinColumns = @JoinColumn(name = "team_id"),
             inverseJoinColumns = @JoinColumn(name = "organization_id")
     )
+    @Builder.Default
     private List<OrganizationEntity> organizations = new ArrayList<>();
 
     @PrePersist

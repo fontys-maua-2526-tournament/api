@@ -105,7 +105,7 @@ class CoachServiceImplTest {
     @Test
     void findAll_ShouldReturnOnlyCoaches_WhenRepositoryReturnsCoachEntities() {
         when(userRepository.findAllByUserRole(UserRole.COACH)).thenReturn(List.of(coachEntity));
-        when(userMapper.entitiesToModels(anyList())).thenReturn(List.of(coach));
+        when(userMapper.entitiesToDtos(anyList())).thenReturn(List.of(coach));
 
         GetAllCoachesResponse response = coachService.findAll();
 
@@ -120,7 +120,7 @@ class CoachServiceImplTest {
     @Test
     void findAll_ShouldReturnEmptyList_WhenNoCoachesExist() {
         when(userRepository.findAllByUserRole(UserRole.COACH)).thenReturn(Collections.emptyList());
-        when(userMapper.entitiesToModels(anyList())).thenReturn(Collections.emptyList());
+        when(userMapper.entitiesToDtos(anyList())).thenReturn(Collections.emptyList());
 
         GetAllCoachesResponse response = coachService.findAll();
 
@@ -137,7 +137,7 @@ class CoachServiceImplTest {
         Tournament tournament = new Tournament();
 
         when(userRepository.findByIdAndUserRole(userId, UserRole.COACH)).thenReturn(Optional.of(coachEntity));
-        when(tournamentRepository.findAllByTeamsUsersId(userId)).thenReturn(List.of(tournamentEntity));
+        when(tournamentRepository.findAllByTeamsMembersId(userId)).thenReturn(List.of(tournamentEntity));
         when(tournamentMapper.entitiesToModels(anyList())).thenReturn(List.of(tournament));
 
         GetTournamentsByUserIdResponse response = coachService.findTournamentsByUserId(userId);
@@ -169,7 +169,7 @@ class CoachServiceImplTest {
         SaveCoachRequest request = new SaveCoachRequest(null, "John", "john@example.com");
         when(userRepository.existsByEmail(request.getEmail())).thenReturn(false);
         when(userRepository.save(any(UserEntity.class))).thenReturn(coachEntity);
-        when(userMapper.entityToModel(coachEntity)).thenReturn(coach);
+        when(userMapper.entityToDto(coachEntity)).thenReturn(coach);
 
         SavedCoachResponse response = coachService.create(request);
 

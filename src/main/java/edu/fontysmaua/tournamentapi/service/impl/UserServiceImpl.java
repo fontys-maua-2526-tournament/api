@@ -19,12 +19,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public GetAllUsersResponse findAll() {
-        return new GetAllUsersResponse(userMapper.entitiesToModels(userRepository.findAll()));
+        return new GetAllUsersResponse(userMapper.entitiesToDtos(userRepository.findAll()));
     }
 
     @Override
     public GetAllUsersResponse findByRole(UserRole role) {
-        return new GetAllUsersResponse(userMapper.entitiesToModels(userRepository.findAllByUserRole((role))));
+        return new GetAllUsersResponse(userMapper.entitiesToDtos(userRepository.findAllByUserRole((role))));
     }
 
     @Override
@@ -41,7 +41,7 @@ public class UserServiceImpl implements UserService {
         existing.setDateOfBirth(request.getDateOfBirth());
         existing.setPhoneNumber(request.getPhoneNumber());
 
-        return userMapper.entityToModel(userRepository.save(existing));
+        return userMapper.entityToDto(userRepository.save(existing));
     }
 
     @Override

@@ -52,9 +52,11 @@ public class TournamentEntity {
     private LocalDateTime endTime;
 
     @ManyToMany(mappedBy = "tournaments")
+    @Builder.Default
     private List<TeamEntity> teams = new ArrayList<>();
 
     @OneToMany(mappedBy = "tournament")
+    @Builder.Default
     private List<MatchEntity> matches = new ArrayList<>();
 
     @ManyToOne

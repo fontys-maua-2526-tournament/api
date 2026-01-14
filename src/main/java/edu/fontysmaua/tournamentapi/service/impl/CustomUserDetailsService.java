@@ -26,7 +26,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException(email);
         }
 
-        User user = userMapper.entityToUser(userEntity);
+        User user = userMapper.entityToModel(userEntity);
         return new UserPrincipal(user);
     }
 }

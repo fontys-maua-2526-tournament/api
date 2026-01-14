@@ -40,6 +40,7 @@ public class UserEntity {
     private List<TeamEntity> teams = new ArrayList<>();
 
     @OneToMany(mappedBy = "organizer")
+    @Builder.Default
     private List<TournamentEntity> tournaments = new ArrayList<>();
 
     public boolean isUnderage() {

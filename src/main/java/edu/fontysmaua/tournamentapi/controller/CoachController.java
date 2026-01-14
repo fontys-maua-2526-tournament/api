@@ -1,6 +1,17 @@
 package edu.fontysmaua.tournamentapi.controller;
 
-import edu.fontysmaua.tournamentapi.domain.response.GetTournamentsByUserIdResponse;
+import edu.fontysmaua.tournamentapi.domain.UserDto;
+import edu.fontysmaua.tournamentapi.domain.request.AddAthleteToTeamRequest;
+import edu.fontysmaua.tournamentapi.domain.request.RegisterRequest;
+import edu.fontysmaua.tournamentapi.domain.request.UpdateTeamRequest;
+import edu.fontysmaua.tournamentapi.domain.request.UpdateUserRequest;
+import edu.fontysmaua.tournamentapi.domain.response.*;
+import edu.fontysmaua.tournamentapi.enums.UserRole;
+import edu.fontysmaua.tournamentapi.service.AuthService;
+import edu.fontysmaua.tournamentapi.service.CoachService;
+import edu.fontysmaua.tournamentapi.service.TournamentService;
+import edu.fontysmaua.tournamentapi.service.UserService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +25,7 @@ public class CoachController {
     private final UserService userService;
     private final TournamentService tournamentService;
     private final AuthService authService;
+    private final CoachService coachService;
 
     @GetMapping
     public ResponseEntity<GetAllUsersResponse> findAll() {

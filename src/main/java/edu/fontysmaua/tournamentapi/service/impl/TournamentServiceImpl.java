@@ -4,11 +4,11 @@ import edu.fontysmaua.tournamentapi.domain.request.SaveTournamentRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllTournamentsResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetTournamentByIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedTournamentResponse;
-import edu.fontysmaua.tournamentapi.exception.NameAlreadyExistsException;
 import edu.fontysmaua.tournamentapi.mapper.TournamentMapper;
 import edu.fontysmaua.tournamentapi.persistence.TournamentRepository;
 import edu.fontysmaua.tournamentapi.persistence.entity.TournamentEntity;
 import edu.fontysmaua.tournamentapi.service.TournamentService;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -43,7 +43,7 @@ public class TournamentServiceImpl implements TournamentService {
     @Override
     public SavedTournamentResponse create(SaveTournamentRequest request) {
         if (tournamentRepository.existsByName(request.getName())) {
-            throw new NameAlreadyExistsException();
+            throw new EntityExistsException("Tournament with this name already exists");
         }
 
         TournamentEntity savedTournament = tournamentRepository

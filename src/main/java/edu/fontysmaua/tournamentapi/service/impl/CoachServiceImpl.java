@@ -9,7 +9,6 @@ import edu.fontysmaua.tournamentapi.domain.response.SavedCoachResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedTeamResponse;
 import edu.fontysmaua.tournamentapi.domain.response.TeamMemberResponse;
 import edu.fontysmaua.tournamentapi.enums.UserRole;
-import edu.fontysmaua.tournamentapi.exception.NameAlreadyExistsException;
 import edu.fontysmaua.tournamentapi.mapper.TeamMapper;
 import edu.fontysmaua.tournamentapi.mapper.TournamentMapper;
 import edu.fontysmaua.tournamentapi.mapper.UserMapper;
@@ -19,6 +18,7 @@ import edu.fontysmaua.tournamentapi.persistence.TournamentRepository;
 import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
 import edu.fontysmaua.tournamentapi.persistence.entity.UserEntity;
 import edu.fontysmaua.tournamentapi.service.CoachService;
+import jakarta.persistence.EntityExistsException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,7 +50,7 @@ public class CoachServiceImpl implements CoachService {
     @Override
     public SavedCoachResponse create(SaveCoachRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new NameAlreadyExistsException("Email already exists");
+            throw new EntityExistsException("User with this email already exists");
         }
 
         var userEntity = new UserEntity();
@@ -73,7 +73,7 @@ public class CoachServiceImpl implements CoachService {
 
         if (!existing.getEmail().equals(request.getEmail()) 
                 && userRepository.existsByEmailAndIdNot(request.getEmail(), request.getId())) {
-            throw new NameAlreadyExistsException("Email already exists");
+            throw new EntityExistsException("User with this email already exists");
         }
 
         existing.setFirstName(request.getName());

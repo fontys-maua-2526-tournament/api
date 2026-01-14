@@ -12,7 +12,6 @@ import edu.fontysmaua.tournamentapi.domain.response.SavedCoachResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedTeamResponse;
 import edu.fontysmaua.tournamentapi.domain.response.TeamMemberResponse;
 import edu.fontysmaua.tournamentapi.enums.UserRole;
-import edu.fontysmaua.tournamentapi.exception.NameAlreadyExistsException;
 import edu.fontysmaua.tournamentapi.mapper.TeamMapper;
 import edu.fontysmaua.tournamentapi.mapper.TournamentMapper;
 import edu.fontysmaua.tournamentapi.mapper.UserMapper;
@@ -22,6 +21,7 @@ import edu.fontysmaua.tournamentapi.persistence.UserRepository;
 import edu.fontysmaua.tournamentapi.persistence.entity.TeamEntity;
 import edu.fontysmaua.tournamentapi.persistence.entity.TournamentEntity;
 import edu.fontysmaua.tournamentapi.persistence.entity.UserEntity;
+import jakarta.persistence.EntityExistsException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -161,7 +161,7 @@ class CoachServiceImplTest {
         SaveCoachRequest request = new SaveCoachRequest(null, "John", "john@example.com");
         when(userRepository.existsByEmail(request.getEmail())).thenReturn(true);
 
-        assertThrows(NameAlreadyExistsException.class, () -> coachService.create(request));
+        assertThrows(EntityExistsException.class, () -> coachService.create(request));
     }
 
     @Test

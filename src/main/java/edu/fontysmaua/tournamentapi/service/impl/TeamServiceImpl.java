@@ -45,7 +45,7 @@ public class TeamServiceImpl implements TeamService {
             throw new IllegalArgumentException("Team does not exist");
         }
 
-        var team = new TeamEntity(request.getId(), request.getName());
+        var team = TeamEntity.builder().id(request.getId()).name(request.getName()).build();
 
         var updated = teamRepository.save(team);
 

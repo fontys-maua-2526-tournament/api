@@ -5,10 +5,10 @@ import edu.fontysmaua.tournamentapi.domain.request.SaveTournamentRequest;
 import edu.fontysmaua.tournamentapi.domain.response.GetAllTournamentsResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetTournamentByIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedTournamentResponse;
-import edu.fontysmaua.tournamentapi.exception.NameAlreadyExistsException;
 import edu.fontysmaua.tournamentapi.mapper.TournamentMapper;
 import edu.fontysmaua.tournamentapi.persistence.TournamentRepository;
 import edu.fontysmaua.tournamentapi.persistence.entity.TournamentEntity;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -262,7 +262,7 @@ class TournamentServiceImplTest {
         when(tournamentRepository.existsByName("Existing Tournament")).thenReturn(true);
 
         // Act & Assert
-        assertThrows(NameAlreadyExistsException.class, () -> tournamentService.create(request));
+        assertThrows(EntityExistsException.class, () -> tournamentService.create(request));
 
         verify(tournamentRepository, times(1)).existsByName("Existing Tournament");
         verify(tournamentRepository, never()).save(any());

@@ -81,12 +81,12 @@ public class TeamServiceImpl implements TeamService {
     public GetTeamsByUserIdResponse AddUserToTeam(Long userId, String inviteCode) {
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
-        TeamEntity teamEntity = teamRepository.findByInvite(inviteCode)
+        TeamEntity teamEntity = teamRepository.findByInviteCode(inviteCode)
                 .orElseThrow(() -> new EntityNotFoundException("Team not found with invite code: " + inviteCode));
 
         // Synchronize both sides of the bidirectional relationship
         userEntity.getTeams().add(teamEntity);
-        teamEntity.getUsers().add(userEntity);
+        teamEntity.getMembers().add(userEntity);
 
         userRepository.save(userEntity);
         teamRepository.save(teamEntity);
@@ -106,7 +106,7 @@ public class TeamServiceImpl implements TeamService {
                 .orElseThrow(() -> new EntityNotFoundException("Team not found with id: " + teamId));
 
         GetTeamMembersResponse response = new GetTeamMembersResponse();
-        response.setMembers(userMapper.entitiesToUsers(teamEntity.getUsers()));
+        response.setMembers(userMapper.entitiesToModels(teamEntity.getMembers()));
         return response;
     }
 }

@@ -10,6 +10,7 @@ import edu.fontysmaua.tournamentapi.domain.response.GetTournamentByIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.GetTournamentsByUserIdResponse;
 import edu.fontysmaua.tournamentapi.domain.response.SavedTournamentResponse;
 import edu.fontysmaua.tournamentapi.enums.Status;
+import edu.fontysmaua.tournamentapi.mapper.MatchMapper;
 import edu.fontysmaua.tournamentapi.mapper.TeamMapper;
 import edu.fontysmaua.tournamentapi.mapper.TournamentMapper;
 import edu.fontysmaua.tournamentapi.persistence.MatchRepository;

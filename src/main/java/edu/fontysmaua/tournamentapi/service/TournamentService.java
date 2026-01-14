@@ -9,7 +9,6 @@ import edu.fontysmaua.tournamentapi.domain.response.GetTournamentsByUserIdRespon
 import edu.fontysmaua.tournamentapi.domain.response.SavedTournamentResponse;
 import jakarta.validation.constraints.Positive;
 
-
 public interface TournamentService {
     GetAllTournamentsResponse findAll();
 
